@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#f2f5f6" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#101516" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="data:," />
+  <title>Knowledge Bases Taxonomy</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+    :root {
+      color-scheme: light dark;
+      --bg: #f2f5f6;
+      --paper: #ffffff;
+      --paper-2: #e9eef0;
+      --ink: #162124;
+      --muted: #536368;
+      --line: #c7d1d4;
+      --line-strong: #95a5a9;
+      --orange: #d96f32;
+      --orange-soft: #fff0e6;
+      --teal: #087d7b;
+      --teal-soft: #dff4f1;
+      --blue: #2563a7;
+      --blue-soft: #e5f0fa;
+      --warn: #8a5417;
+      --warn-soft: #fff4d9;
+      --code: #263336;
+      --shadow: 0 18px 42px rgba(30, 48, 52, .10);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101516;
+        --paper: #171e20;
+        --paper-2: #202a2d;
+        --ink: #ecf2f3;
+        --muted: #a8b7bb;
+        --line: #344246;
+        --line-strong: #596b70;
+        --orange: #f59b61;
+        --orange-soft: #3b271e;
+        --teal: #68d2cd;
+        --teal-soft: #163735;
+        --blue: #8ab8ec;
+        --blue-soft: #1b3045;
+        --warn: #f1be73;
+        --warn-soft: #382d19;
+        --code: #dbe7e9;
+        --shadow: 0 20px 48px rgba(0, 0, 0, .27);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 0;
+      background:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px),
+        var(--bg);
+      background-size: 32px 32px;
+      background-attachment: fixed;
+      color: var(--ink);
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+    a { color: inherit; }
+    button, input { font: inherit; }
+    .page { width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 44px 0 72px; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-top: 6px solid var(--orange);
+      padding: clamp(28px, 5vw, 64px);
+      box-shadow: var(--shadow);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      right: -95px;
+      top: -95px;
+      border: 42px solid var(--teal-soft);
+      border-radius: 50%;
+      opacity: .8;
+      pointer-events: none;
+    }
+    .meta-line, .mono {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: .76rem;
+      letter-spacing: .03em;
+    }
+    .meta-line { color: var(--teal); font-weight: 500; margin: 0 0 18px; }
+    .hero h1 {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      max-width: 780px;
+      font-size: clamp(2.35rem, 7vw, 5.8rem);
+      line-height: .96;
+      letter-spacing: -.055em;
+      font-weight: 700;
+    }
+    .hero .lede {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: 26px 0 0;
+      color: var(--muted);
+      font-size: clamp(1.06rem, 2vw, 1.28rem);
+    }
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid var(--line);
+      margin-top: 36px;
+      padding-top: 22px;
+      gap: 18px;
+      max-width: 760px;
+    }
+    .metric strong { display: block; font-size: 1.55rem; line-height: 1; }
+    .metric span { color: var(--muted); font-size: .84rem; }
+
+    .notice {
+      margin: 20px 0 0;
+      padding: 16px 18px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--warn-soft);
+      border: 1px solid color-mix(in srgb, var(--warn) 45%, var(--line));
+      color: var(--warn);
+    }
+    .notice svg { flex: 0 0 22px; margin-top: 2px; }
+    .notice strong { color: var(--ink); }
+    .notice p { margin: 0; font-size: .92rem; }
+
+    .section { margin-top: 64px; }
+    .section-head {
+      display: grid;
+      grid-template-columns: 70px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+      margin-bottom: 24px;
+    }
+    .step {
+      color: var(--orange);
+      font: 500 .8rem/1 "IBM Plex Mono", monospace;
+      border-top: 2px solid var(--orange);
+      padding-top: 9px;
+    }
+    h2 { margin: 0; font-size: clamp(1.75rem, 3vw, 2.8rem); line-height: 1.06; letter-spacing: -.035em; }
+    .section-intro { margin: 10px 0 0; color: var(--muted); max-width: 760px; }
+
+    .boundary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .boundary {
+      padding: 28px;
+      border: 1px solid var(--line-strong);
+      background: var(--paper);
+      min-width: 0;
+    }
+    .boundary.managed { border-top: 7px solid var(--teal); }
+    .boundary.customer { border-top: 7px solid var(--orange); }
+    .boundary .type { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+    .boundary h3 { margin: 0; font-size: 1.45rem; letter-spacing: -.02em; }
+    .badge { font: 500 .7rem/1 "IBM Plex Mono", monospace; padding: 7px 8px; background: var(--paper-2); white-space: nowrap; }
+    .boundary > p { margin: 12px 0 20px; color: var(--muted); }
+    .ledger { display: grid; margin: 0; }
+    .ledger div { display: grid; grid-template-columns: 120px minmax(0,1fr); gap: 12px; border-top: 1px solid var(--line); padding: 11px 0; }
+    .ledger dt { color: var(--muted); font-size: .8rem; }
+    .ledger dd { margin: 0; font-size: .92rem; }
+    .boundary .source-link { margin-top: 17px; }
+
+    .source-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--blue);
+      text-decoration: none;
+      font: 500 .77rem/1.3 "IBM Plex Mono", monospace;
+    }
+    .source-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+    .matrix {
+      margin-top: 18px;
+      border: 1px solid var(--line-strong);
+      background: var(--paper);
+    }
+    .matrix-row { display: grid; grid-template-columns: 1.05fr 1fr 1fr; }
+    .matrix-row > div { min-width: 0; padding: 12px 16px; border-top: 1px solid var(--line); }
+    .matrix-row > div + div { border-left: 1px solid var(--line); }
+    .matrix-row.head { background: var(--code); color: var(--bg); font: 500 .76rem/1.2 "IBM Plex Mono", monospace; }
+    @media (prefers-color-scheme: dark) { .matrix-row.head { background: #dae5e7; color: #172023; } }
+    .matrix-row.head > div { border-top: 0; }
+    .matrix-row:not(.head) > div:first-child { color: var(--muted); font-size: .86rem; }
+    .yes { color: var(--teal); font-weight: 600; }
+    .no { color: var(--muted); }
+
+    .explorer {
+      position: sticky;
+      top: 8px;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 12px;
+      background: color-mix(in srgb, var(--paper) 94%, transparent);
+      border: 1px solid var(--line-strong);
+      box-shadow: 0 10px 28px rgba(20, 34, 38, .10);
+      padding: 12px;
+      backdrop-filter: blur(10px);
+      margin-bottom: 28px;
+    }
+    .search-wrap { position: relative; min-width: 0; }
+    .search-wrap svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+    .search-wrap input {
+      width: 100%;
+      height: 42px;
+      padding: 0 14px 0 42px;
+      color: var(--ink);
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 0;
+      outline: none;
+    }
+    .search-wrap input:focus { border-color: var(--teal); box-shadow: 0 0 0 2px var(--teal-soft); }
+    .filters { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .filter-btn, .reset-btn {
+      cursor: pointer;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      background: var(--paper-2);
+      padding: 8px 11px;
+      min-height: 42px;
+    }
+    .filter-btn[aria-pressed="true"] { color: var(--paper); background: var(--teal); border-color: var(--teal); }
+    @media (prefers-color-scheme: dark) { .filter-btn[aria-pressed="true"] { color: #0d1516; } }
+
+    .taxonomy {
+      display: grid;
+      grid-template-columns: 170px minmax(0, 1fr);
+      column-gap: 24px;
+      row-gap: 22px;
+      position: relative;
+    }
+    .taxonomy::before {
+      content: "";
+      position: absolute;
+      left: 169px;
+      top: 18px;
+      bottom: 18px;
+      width: 1px;
+      background: var(--line-strong);
+    }
+    .branch-label { position: relative; padding: 10px 18px 0 0; text-align: right; }
+    .branch-label::after {
+      content: "";
+      position: absolute;
+      right: -29px;
+      top: 17px;
+      width: 9px;
+      height: 9px;
+      border: 3px solid var(--bg);
+      background: var(--orange);
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px var(--line-strong);
+    }
+    .branch-label b { display: block; font-size: 1rem; }
+    .branch-label span { color: var(--muted); font: .7rem/1.4 "IBM Plex Mono", monospace; }
+    .branch-content { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; min-width: 0; }
+    .leaf {
+      min-width: 0;
+      padding: 18px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-top: 3px solid var(--line-strong);
+      transition: border-color .15s ease, background .15s ease;
+    }
+    .leaf:hover { border-top-color: var(--teal); }
+    .leaf[data-scope~="managed"] { --scope: var(--teal); }
+    .leaf[data-scope~="customer"] { --scope: var(--orange); }
+    .leaf[data-scope~="both"] { --scope: var(--blue); }
+    .leaf .scope { color: var(--scope, var(--muted)); font: 500 .67rem/1 "IBM Plex Mono", monospace; }
+    .leaf h3 { margin: 10px 0 7px; font-size: 1.05rem; line-height: 1.25; }
+    .leaf p { margin: 0; color: var(--muted); font-size: .87rem; }
+    .leaf .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 13px; }
+    .tag { background: var(--paper-2); color: var(--muted); padding: 4px 6px; font: .66rem/1.2 "IBM Plex Mono", monospace; }
+    .leaf.wide { grid-column: span 2; }
+    .leaf .source-link { margin-top: 14px; }
+    .leaf[hidden], .taxonomy-row-hidden { display: none !important; }
+
+    details { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 11px; }
+    summary { cursor: pointer; color: var(--blue); font-size: .8rem; font-weight: 600; }
+    details ul { margin: 10px 0 0; padding-left: 18px; color: var(--muted); font-size: .82rem; }
+    details li + li { margin-top: 5px; }
+
+    .pathways { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+    .pathway { background: var(--paper); border: 1px solid var(--line-strong); padding: 24px; }
+    .pathway .path-no { color: var(--orange); font: 500 .72rem/1 "IBM Plex Mono", monospace; }
+    .pathway h3 { margin: 12px 0 7px; font-size: 1.2rem; }
+    .pathway p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .pathway ol { margin: 18px 0 0; padding: 0; list-style: none; counter-reset: p; }
+    .pathway li { counter-increment: p; display: grid; grid-template-columns: 24px 1fr; gap: 9px; padding: 9px 0; border-top: 1px solid var(--line); font-size: .84rem; }
+    .pathway li::before { content: counter(p); font-family: "IBM Plex Mono"; color: var(--teal); }
+
+    .source-panel { background: var(--code); color: var(--bg); padding: 30px; }
+    @media (prefers-color-scheme: dark) { .source-panel { background: #dce6e8; color: #152022; } }
+    .source-panel h2 { font-size: 1.55rem; letter-spacing: -.02em; }
+    .source-panel p { opacity: .75; margin: 8px 0 20px; max-width: 760px; }
+    .sources { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px 28px; }
+    .sources a { display: flex; gap: 10px; align-items: baseline; text-decoration: none; padding: 10px 0; border-top: 1px solid color-mix(in srgb, currentColor 26%, transparent); font-size: .85rem; }
+    .sources a:hover span:last-child { text-decoration: underline; text-underline-offset: 3px; }
+    .sources .n { opacity: .55; font-family: "IBM Plex Mono"; font-size: .72rem; }
+    .footnote { margin: 18px 0 0; opacity: .58; font: .7rem/1.5 "IBM Plex Mono", monospace; }
+
+    .empty {
+      display: none;
+      grid-column: 1 / -1;
+      background: var(--paper);
+      border: 1px dashed var(--line-strong);
+      padding: 32px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .empty.visible { display: block; }
+
+    @media (max-width: 900px) {
+      .branch-content { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .pathways { grid-template-columns: 1fr; }
+      .pathway { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 20px; }
+      .pathway ol { margin-top: 0; }
+    }
+
+    @media (max-width: 720px) {
+      .page { width: min(100% - 24px, 1180px); padding-top: 18px; }
+      .hero { padding: 28px 22px 24px; }
+      .hero::after { width: 160px; height: 160px; right: -74px; top: -74px; border-width: 24px; }
+      .hero h1 { font-size: clamp(2.5rem, 15vw, 4.1rem); max-width: 92%; }
+      .hero-metrics { grid-template-columns: 1fr; gap: 11px; }
+      .metric { display: flex; align-items: baseline; gap: 8px; }
+      .boundary-grid { grid-template-columns: 1fr; }
+      .section { margin-top: 46px; }
+      .section-head { grid-template-columns: 48px minmax(0,1fr); gap: 12px; }
+      .explorer { position: static; grid-template-columns: 1fr; }
+      .filters { justify-content: flex-start; }
+      .filter-btn { flex: 1 1 auto; }
+      .taxonomy { display: block; }
+      .taxonomy::before { display: none; }
+      .branch-label { text-align: left; padding: 22px 0 10px; border-top: 1px solid var(--line-strong); margin-top: 18px; }
+      .branch-label:first-child { margin-top: 0; }
+      .branch-label::after { display: none; }
+      .branch-content { grid-template-columns: 1fr; }
+      .leaf.wide { grid-column: auto; }
+      .matrix-row { grid-template-columns: 1fr 1fr; }
+      .matrix-row.head > div:first-child { display: none; }
+      .matrix-row:not(.head) > div:first-child { grid-column: 1 / -1; background: var(--paper-2); font-weight: 600; color: var(--ink); border-bottom: 1px solid var(--line); }
+      .matrix-row > div:nth-child(2) { border-left: 0; }
+      .matrix-row > div:nth-child(3) { border-left: 1px solid var(--line); }
+      .pathway { display: block; }
+      .pathway ol { margin-top: 18px; }
+      .sources { grid-template-columns: 1fr; }
+      .ledger div { grid-template-columns: 98px minmax(0,1fr); }
+      .notice { align-items: flex-start; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <nav style="position:sticky;top:0;z-index:50;background:Canvas;color:CanvasText;border-bottom:1px solid #888;padding:10px 20px;font:600 14px system-ui,sans-serif;"><a href="../" style="color:inherit;text-decoration:none;">&larr; AI Study Material</a></nav>
+  <main class="page">
+    <section class="hero" aria-labelledby="page-heading">
+      <p class="meta-line">ARCHITECTURE MAP &middot; AWS DOCUMENTATION SNAPSHOT &middot; 21 SEP 2026</p>
+      <h1 id="page-heading">Choose the control boundary first.</h1>
+      <p class="lede">Amazon Bedrock Knowledge Bases is a family of retrieval architectures&mdash;not one fixed RAG stack. Start with who operates the pipeline, then choose the knowledge shape, ingestion path, preparation strategy, store, and runtime.</p>
+      <div class="hero-metrics" aria-label="Taxonomy summary">
+        <div class="metric"><strong>2</strong><span>operating models</span></div>
+        <div class="metric"><strong>4</strong><span>retrieval architectures</span></div>
+        <div class="metric"><strong>6</strong><span>decision layers mapped below</span></div>
+      </div>
+    </section>
+
+    <aside class="notice" aria-label="Upcoming connector change">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 2.8 20h18.4L12 3Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v6M12 17.3v.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <p><strong>Connector transition:</strong> AWS says new Confluence, SharePoint, Salesforce, and Web Crawler connectors stop being creatable on <strong>30 Sep 2026</strong> for customer-managed knowledge bases. Existing connectors continue; use Managed Knowledge Bases for new implementations that need them. <a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/data-source-connectors.html" target="_blank" rel="noopener">AWS notice &#8599;</a></p>
+    </aside>
+
+    <section class="section" aria-labelledby="boundary-title">
+      <div class="section-head">
+        <div class="step">00 / ROOT</div>
+        <div><h2 id="boundary-title">Operating model</h2><p class="section-intro">This choice changes almost every downstream branch: datastore ownership, connector breadth, retrieval behavior, model defaults, and observability.</p></div>
+      </div>
+
+      <div class="boundary-grid">
+        <article class="boundary managed">
+          <div class="type"><h3>Bedrock Managed</h3><span class="badge">LOWER OPS</span></div>
+          <p>Bedrock manages ingestion, indexing, storage, scaling, and retrieval optimization. Best when you want a managed RAG service and agent-ready retrieval.</p>
+          <dl class="ledger">
+            <div><dt>Retrieval</dt><dd>Hybrid by default; optional agentic multi-hop</dd></div>
+            <div><dt>Models</dt><dd>Managed embedding + reranking defaults, or selected custom models</dd></div>
+            <div><dt>Connectors</dt><dd>Broad native set with document-level ACL awareness</dd></div>
+            <div><dt>Infrastructure</dt><dd>No vector database to provision or scale</dd></div>
+          </dl>
+          <a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-build-managed.html" target="_blank" rel="noopener">Managed KB guide &#8599;</a>
+        </article>
+
+        <article class="boundary customer">
+          <div class="type"><h3>Customer-managed</h3><span class="badge">MAX CONTROL</span></div>
+          <p>You configure and operate the vector/text datastore and select the processing and search options. Best when the database or index design is part of the product.</p>
+          <dl class="ledger">
+            <div><dt>Retrieval</dt><dd>Your vector search configuration; no agentic retrieval</dd></div>
+            <div><dt>Models</dt><dd>Choose embedding and reranking models</dd></div>
+            <div><dt>Connectors</dt><dd>S3 + custom; existing Confluence, SharePoint, Salesforce, and Web Crawler connectors continue to work</dd></div>
+            <div><dt>Infrastructure</dt><dd>Provision, secure, scale, and maintain the store</dd></div>
+          </dl>
+          <a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-build.html" target="_blank" rel="noopener">Vector KB guide &#8599;</a>
+        </article>
+      </div>
+
+      <div class="matrix" role="table" aria-label="Managed and customer-managed comparison">
+        <div class="matrix-row head" role="row"><div role="columnheader">Decision</div><div role="columnheader">Managed</div><div role="columnheader">Customer-managed</div></div>
+        <div class="matrix-row" role="row"><div role="rowheader">Agentic retrieval</div><div class="yes">Supported</div><div class="no">Not supported</div></div>
+        <div class="matrix-row" role="row"><div role="rowheader">Search behavior</div><div>Hybrid, service-optimized</div><div>Choose your strategy</div></div>
+        <div class="matrix-row" role="row"><div role="rowheader">Embedding</div><div>Managed default or custom</div><div>Custom model choice</div></div>
+        <div class="matrix-row" role="row"><div role="rowheader">Reranking</div><div>Managed default, custom, or none</div><div>Custom or default KB ranker</div></div>
+        <div class="matrix-row" role="row"><div role="rowheader">AgentCore Gateway</div><div class="yes">Native integration</div><div class="no">Not native</div></div>
+        <div class="matrix-row" role="row"><div role="rowheader">Direct datastore access</div><div class="no">Service-managed</div><div class="yes">Customer-controlled</div></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="map-title">
+      <div class="section-head">
+        <div class="step">01&ndash;06</div>
+        <div><h2 id="map-title">The option tree</h2><p class="section-intro">Filter by operating model or search by a capability. The labels show where an option applies; some branches are architecture alternatives rather than composable features.</p></div>
+      </div>
+
+      <div class="explorer" aria-label="Taxonomy filters">
+        <label class="search-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Search the taxonomy</span>
+          <input id="search" type="search" placeholder="Find GraphRAG, Lambda, metadata, reranking&hellip;" autocomplete="off" />
+        </label>
+        <div class="filters" role="group" aria-label="Filter by operating model">
+          <button class="filter-btn" type="button" data-filter="all" aria-pressed="true">All</button>
+          <button class="filter-btn" type="button" data-filter="managed" aria-pressed="false">Managed</button>
+          <button class="filter-btn" type="button" data-filter="customer" aria-pressed="false">Customer-managed</button>
+        </div>
+      </div>
+
+      <div class="taxonomy" id="taxonomy">
+        <div class="branch-label"><b>Architecture</b><span>KNOWLEDGE SHAPE</span></div>
+        <div class="branch-content">
+          <article class="leaf" data-scope="managed customer both"><span class="scope">BOTH MODELS</span><h3>Vector RAG</h3><p>Embed source chunks, retrieve semantically similar content, and optionally generate a grounded response.</p><div class="tags"><span class="tag">VECTOR</span><span class="tag">Retrieve</span><span class="tag">RetrieveAndGenerate</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-how-it-works.html" target="_blank" rel="noopener">How it works &#8599;</a></article>
+          <article class="leaf" data-scope="customer"><span class="scope">CUSTOMER-MANAGED</span><h3>GraphRAG / Neptune Analytics</h3><p>Combines vector retrieval with graph traversal across entities and relationships for multi-hop, cross-document questions.</p><div class="tags"><span class="tag">S3 only</span><span class="tag">graph model</span><span class="tag">no autoscaling</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-build-graphs.html" target="_blank" rel="noopener">GraphRAG guide &#8599;</a></article>
+          <article class="leaf" data-scope="customer"><span class="scope">SEPARATE KB TYPE</span><h3>Structured SQL</h3><p>Converts natural language to SQL through Amazon Redshift and queries Redshift or an AWS Glue Data Catalog store.</p><div class="tags"><span class="tag">SQL</span><span class="tag">GenerateQuery</span><span class="tag">read-only roles</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-build-structured.html" target="_blank" rel="noopener">Structured data guide &#8599;</a></article>
+          <article class="leaf" data-scope="customer"><span class="scope">EXISTING INDEX</span><h3>Amazon Kendra GenAI index</h3><p>Reuses Kendra-indexed content and its high-accuracy retrieval across Bedrock applications without rebuilding the index.</p><div class="tags"><span class="tag">reuse index</span><span class="tag">semantic retrieval</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-build-kendra-genai-index.html" target="_blank" rel="noopener">Kendra option &#8599;</a></article>
+        </div>
+
+        <div class="branch-label"><b>Sources</b><span>CONNECT + SYNC</span></div>
+        <div class="branch-content">
+          <article class="leaf wide" data-scope="managed"><span class="scope">MANAGED</span><h3>Native managed connectors</h3><p>Amazon S3, Box, Confluence Cloud, Confluence Data Center, Microsoft SharePoint Online, Google Drive, Microsoft OneDrive, ServiceNow, Web Crawler, and custom connector.</p><details><summary>Connector implications</summary><ul><li>Managed connectors support document-level permissions; Web Crawler is the exception called out by AWS.</li><li>Managed Knowledge Bases handle ingestion and infrastructure behind these connectors.</li><li>Exact connector support can vary by Region.</li></ul></details><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-create.html" target="_blank" rel="noopener">Managed connector list &#8599;</a></article>
+          <article class="leaf" data-scope="customer"><span class="scope">CUSTOMER-MANAGED</span><h3>S3 + custom ingestion</h3><p>Use an S3 data source, a custom data source, or direct document ingestion. Existing Confluence, SharePoint, Salesforce, and Web Crawler connectors continue to work; AWS stops new connector creation for these four on 30 Sep 2026. Multimodal files are supported only through S3 and custom sources.</p><div class="tags"><span class="tag">sync</span><span class="tag">direct ingest</span><span class="tag">existing connectors continue</span><span class="tag">multimodal</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/data-source-connectors.html" target="_blank" rel="noopener">Data source options &#8599;</a></article>
+        </div>
+
+        <div class="branch-label"><b>Prepare</b><span>PARSE + CHUNK + ENRICH</span></div>
+        <div class="branch-content">
+          <article class="leaf" data-scope="managed"><span class="scope">MANAGED PARSE</span><h3>Managed parser</h3><p><code>SMART_PARSING</code> is the default service-managed strategy and automatically selects an approach for the content. With a native multimodal embedding model, <code>MULTI_MODAL_EMBEDDINGS</code> sends files directly to the model instead.</p><div class="tags"><span class="tag">SMART_PARSING</span><span class="tag">service-managed</span><span class="tag">no parser model setup</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-customize-ingestion.html" target="_blank" rel="noopener">Managed parsing &#8599;</a></article>
+          <article class="leaf" data-scope="customer"><span class="scope">CUSTOMER PARSE</span><h3>Configurable parser</h3><p>Choose the default text parser (no usage charge), Bedrock Data Automation for multimodal extraction, or a foundation-model parser with a customizable extraction prompt.</p><div class="tags"><span class="tag">default</span><span class="tag">BDA</span><span class="tag">FM parser</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-advanced-parsing.html" target="_blank" rel="noopener">Parsing options &#8599;</a></article>
+          <article class="leaf" data-scope="managed customer both"><span class="scope">CHUNK</span><h3>Standard chunking</h3><p>Default &asymp;300-token chunks, configurable fixed-size chunks with overlap, or no chunking so each document is one chunk.</p><div class="tags"><span class="tag">default</span><span class="tag">fixed-size</span><span class="tag">none</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking.html" target="_blank" rel="noopener">Chunking guide &#8599;</a></article>
+          <article class="leaf" data-scope="customer"><span class="scope">ADVANCED CHUNK</span><h3>Semantic or hierarchical</h3><p>Semantic chunking finds meaning-based breakpoints. Hierarchical chunking retrieves precise child chunks and normally returns their broader parent context.</p><div class="tags"><span class="tag">semantic</span><span class="tag">parent / child</span><span class="tag">extra cost</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking.html" target="_blank" rel="noopener">Advanced chunking &#8599;</a></article>
+          <article class="leaf" data-scope="customer"><span class="scope">CUSTOM TRANSFORM</span><h3>Lambda transformation</h3><p>Inject custom post-chunking logic, implement your own chunker, or add chunk-level metadata using Lambda and intermediate S3 storage.</p><div class="tags"><span class="tag">POST_CHUNKING</span><span class="tag">S3</span><span class="tag">metadata</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-custom-transformation.html" target="_blank" rel="noopener">Lambda contract &#8599;</a></article>
+          <article class="leaf" data-scope="managed customer both"><span class="scope">ENRICH</span><h3>Document + chunk metadata</h3><p>Attach filterable metadata through sidecar JSON, CSV field mapping, connector metadata, or a Lambda transform.</p><div class="tags"><span class="tag">STRING</span><span class="tag">NUMBER</span><span class="tag">BOOLEAN</span><span class="tag">STRING_LIST</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-metadata.html" target="_blank" rel="noopener">Metadata formats &#8599;</a></article>
+          <article class="leaf" data-scope="managed customer both"><span class="scope">MULTIMODAL</span><h3>Native embedding or text conversion</h3><p>Embed media natively for similarity search, or use BDA to turn audio, video, images, and documents into searchable text and summaries.</p><details><summary>Key trade-off</summary><ul><li>Native embedding preserves visual/audio detail.</li><li>BDA supports text-grounded response generation.</li><li>Native managed multimodal currently limits retrieval to text queries with <code>Retrieve</code>.</li></ul></details><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-multimodal.html" target="_blank" rel="noopener">Multimodal guide &#8599;</a></article>
+        </div>
+
+        <div class="branch-label"><b>Encode</b><span>EMBEDDING MODEL</span></div>
+        <div class="branch-content">
+          <article class="leaf" data-scope="managed"><span class="scope">MANAGED DEFAULT</span><h3>Service-managed embedding</h3><p>No model selection, dimensions, hosting, or embedding service limits to manage. Required if you want the managed reranker.</p><div class="tags"><span class="tag">automatic</span><span class="tag">managed scaling</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-create.html" target="_blank" rel="noopener">Embedding choices &#8599;</a></article>
+          <article class="leaf" data-scope="managed"><span class="scope">MANAGED &middot; CUSTOM TEXT</span><h3>Custom text embedding</h3><p>Provide a supported Bedrock embedding model ARN. Managed KBs fix the vector at <strong>1,024 dimensions</strong> with the <strong>float32</strong> data type; dimensions and type are not configurable.</p><div class="tags"><span class="tag">1024 dimensions</span><span class="tag">float32 only</span><span class="tag">model ARN</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-create.html" target="_blank" rel="noopener">Managed embedding choices &#8599;</a></article>
+          <article class="leaf" data-scope="customer"><span class="scope">CUSTOMER &middot; TEXT</span><h3>Text embedding</h3><p>Select a supported Bedrock embedding model, configure a supported vector dimension, and choose float32 or binary where the model and vector store support it.</p><div class="tags"><span class="tag">configurable dimensions</span><span class="tag">float32</span><span class="tag">binary</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-create.html" target="_blank" rel="noopener">Vector configuration &#8599;</a></article>
+          <article class="leaf" data-scope="managed"><span class="scope">MANAGED &middot; CUSTOM MULTIMODAL</span><h3>TwelveLabs multimodal embedding</h3><p>For a custom native multimodal model, Managed KBs support only <strong>TwelveLabs Marengo Embed 3.0</strong>. This option requires a multimodal storage destination in Amazon S3.</p><div class="tags"><span class="tag">Marengo Embed 3.0</span><span class="tag">S3 destination required</span><span class="tag">text + media</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-create.html" target="_blank" rel="noopener">Managed model constraint &#8599;</a></article>
+          <article class="leaf" data-scope="customer"><span class="scope">CUSTOMER &middot; MULTIMODAL</span><h3>Multimodal embedding</h3><p>Choose a supported multimodal embedding model and an S3 destination for extracted media. Model and store compatibility determine the available retrieval path.</p><div class="tags"><span class="tag">cross-modal</span><span class="tag">S3 media storage</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-multimodal.html" target="_blank" rel="noopener">Multimodal guide &#8599;</a></article>
+        </div>
+
+        <div class="branch-label"><b>Store</b><span>INDEX + DATABASE</span></div>
+        <div class="branch-content">
+          <article class="leaf" data-scope="managed"><span class="scope">MANAGED</span><h3>Bedrock-managed datastore</h3><p>Auto-scaling storage for embeddings, text, metadata, and raw files; Bedrock owns provisioning and optimization.</p><div class="tags"><span class="tag">autoscale</span><span class="tag">no direct DB ops</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-build-managed.html" target="_blank" rel="noopener">Managed storage &#8599;</a></article>
+          <article class="leaf wide" data-scope="customer"><span class="scope">CUSTOMER-MANAGED</span><h3>Vector store choices</h3><p>Quick-create options documented by AWS include OpenSearch Serverless, Aurora PostgreSQL Serverless, Neptune Analytics, and S3 Vectors. Supported bring-your-own integrations also include OpenSearch Service managed clusters, Pinecone, Redis Enterprise Cloud, and MongoDB Atlas.</p><details><summary>Selection lens</summary><ul><li>OpenSearch: keyword + vector search and mature filtering.</li><li>Aurora: relational context plus pgvector.</li><li>Neptune Analytics: graph relationships and GraphRAG.</li><li>S3 Vectors: cost-oriented serverless vector storage.</li><li>Partner stores: existing platform fit and operational preference.</li></ul></details><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-create.html" target="_blank" rel="noopener">Storage configuration &#8599;</a></article>
+        </div>
+
+        <div class="branch-label"><b>Retrieve</b><span>SEARCH + RESPOND</span></div>
+        <div class="branch-content">
+          <article class="leaf" data-scope="managed"><span class="scope">MANAGED</span><h3>Hybrid + agentic retrieval</h3><p>Managed KBs always use hybrid keyword/semantic search. Agentic retrieval can decompose complex questions, retrieve iteratively, and evaluate sufficiency.</p><div class="tags"><span class="tag">hybrid</span><span class="tag">multi-hop</span><span class="tag">AgenticRetrieveStream</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-test.html" target="_blank" rel="noopener">Testing options &#8599;</a></article>
+          <article class="leaf" data-scope="managed customer both"><span class="scope">RERANK</span><h3>Reranking</h3><p>Managed KBs offer managed, custom, or no reranker. Customer-managed KBs can supply a Bedrock reranking model instead of the default KB ranker.</p><div class="tags"><span class="tag">MANAGED</span><span class="tag">CUSTOM</span><span class="tag">NONE</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-retrieve.html" target="_blank" rel="noopener">Retrieve configuration &#8599;</a></article>
+          <article class="leaf" data-scope="managed customer both"><span class="scope">FILTER</span><h3>Metadata filters</h3><p>Limit eligible chunks using document or chunk attributes. Managed KBs do not support the <code>startsWith</code> and <code>stringContains</code> operators.</p><div class="tags"><span class="tag">manual</span><span class="tag">implicit</span><span class="tag">filterable fields</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-retrieve.html" target="_blank" rel="noopener">Filter considerations &#8599;</a></article>
+          <article class="leaf wide" data-scope="managed customer both"><span class="scope">DELIVERY</span><h3>Three runtime surfaces</h3><p><code>Retrieve</code> returns relevant source chunks; <code>RetrieveAndGenerate</code> adds model-generated answers with citations; an Agent can invoke the knowledge base during orchestration. Structured KBs also expose <code>GenerateQuery</code> for natural-language-to-SQL conversion.</p><div class="tags"><span class="tag">API</span><span class="tag">citations</span><span class="tag">Agents</span><span class="tag">SQL</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-deploy.html" target="_blank" rel="noopener">Deployment surfaces &#8599;</a></article>
+          <article class="leaf" data-scope="managed customer both"><span class="scope">SAFETY BOUNDARY</span><h3>Guardrails caveat</h3><p>Guardrails apply to the user input and generated LLM response&mdash;not to the source references returned by Knowledge Bases.</p><div class="tags"><span class="tag">input</span><span class="tag">generation</span><span class="tag">references excluded</span></div><a class="source-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-retrieve.html" target="_blank" rel="noopener">Runtime note &#8599;</a></article>
+        </div>
+
+        <div class="empty" id="empty">No option matches this filter. Try a broader term or switch the operating model.</div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="paths-title">
+      <div class="section-head">
+        <div class="step">07 / FIT</div>
+        <div><h2 id="paths-title">Fast paths by intent</h2><p class="section-intro">These are compositional starting points, not product tiers. Validate model, feature, and Region support before implementation.</p></div>
+      </div>
+      <div class="pathways">
+        <article class="pathway"><div><span class="path-no">PATH A</span><h3>Ship managed enterprise search</h3><p>Minimize platform work and expose content to agent frameworks.</p></div><ol><li>Bedrock Managed</li><li>Native connector + ACLs</li><li>Managed embedding + reranker</li><li>Hybrid or agentic retrieval</li><li>AgentCore Gateway / Agent</li></ol></article>
+        <article class="pathway"><div><span class="path-no">PATH B</span><h3>Control retrieval economics</h3><p>Keep datastore design, indexing, and search behavior in your architecture.</p></div><ol><li>Customer-managed vector KB</li><li>S3 or custom source</li><li>Parse + chunk + enrich</li><li>Your embedding model</li><li>Your vector store + reranker</li></ol></article>
+        <article class="pathway"><div><span class="path-no">PATH C</span><h3>Reason across relationships</h3><p>Answer questions whose evidence spans entities and multiple documents.</p></div><ol><li>Customer-managed GraphRAG</li><li>Amazon S3 source</li><li>Graph construction model</li><li>Neptune Analytics</li><li>Vector seed + graph expansion</li></ol></article>
+      </div>
+    </section>
+
+    <section class="section source-panel" aria-labelledby="sources-title">
+      <h2 id="sources-title">Primary AWS sources</h2>
+      <p>This taxonomy synthesizes the linked AWS documentation. Product support is Region- and model-dependent; consult the live support matrices during implementation.</p>
+      <div class="sources">
+        <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html" target="_blank" rel="noopener"><span class="n">01</span><span>Knowledge Bases overview</span></a>
+        <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-build-managed.html" target="_blank" rel="noopener"><span class="n">02</span><span>Managed vs customer-managed</span></a>
+        <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-create.html" target="_blank" rel="noopener"><span class="n">03</span><span>Managed creation + connectors</span></a>
+        <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-create.html" target="_blank" rel="noopener"><span class="n">04</span><span>Vector KB configuration</span></a>
+        <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-advanced-parsing.html" target="_blank" rel="noopener"><span class="n">05</span><span>Parsing options</span></a>
+        <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking.html" target="_blank" rel="noopener"><span class="n">06</span><span>Chunking options</span></a>
+        <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-build-graphs.html" target="_blank" rel="noopener"><span class="n">07</span><span>GraphRAG with Neptune</span></a>
+        <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-build-structured.html" target="_blank" rel="noopener"><span class="n">08</span><span>Structured data KBs</span></a>
+        <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-retrieve.html" target="_blank" rel="noopener"><span class="n">09</span><span>Retrieval configuration</span></a>
+        <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-multimodal.html" target="_blank" rel="noopener"><span class="n">10</span><span>Multimodal KBs</span></a>
+      </div>
+      <p class="footnote">Snapshot date reflects when these pages were read for this artifact, not a claim that every AWS page was published or updated on that date.</p>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const search = document.getElementById('search');
+      const leaves = [...document.querySelectorAll('.leaf')];
+      const buttons = [...document.querySelectorAll('.filter-btn')];
+      const empty = document.getElementById('empty');
+      const groups = [...document.querySelectorAll('.branch-content')];
+      let active = 'all';
+
+      function applyFilters() {
+        const q = search.value.trim().toLowerCase();
+        let visible = 0;
+        leaves.forEach((leaf) => {
+          const scope = leaf.dataset.scope.split(/\s+/);
+          const scopeMatch = active === 'all' || scope.includes(active) || scope.includes('both');
+          const textMatch = !q || leaf.textContent.toLowerCase().includes(q);
+          const show = scopeMatch && textMatch;
+          leaf.hidden = !show;
+          if (show) visible += 1;
+        });
+        groups.forEach((group) => {
+          const label = group.previousElementSibling;
+          const hasVisible = [...group.querySelectorAll('.leaf')].some((leaf) => !leaf.hidden);
+          group.classList.toggle('taxonomy-row-hidden', !hasVisible);
+          if (label) label.classList.toggle('taxonomy-row-hidden', !hasVisible);
+        });
+        empty.classList.toggle('visible', visible === 0);
+      }
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          active = button.dataset.filter;
+          buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+          applyFilters();
+        });
+      });
+      search.addEventListener('input', applyFilters);
+    })();
+  </script>
+</body>
+</html>
