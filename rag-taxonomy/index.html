@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="icon" href="data:," />
+  <title>RAG Taxonomy</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f4f7f6;
+      --surface: #ffffff;
+      --surface-2: #eaf0ee;
+      --ink: #14231f;
+      --muted: #53645e;
+      --line: #cbd6d2;
+      --line-strong: #9cadA7;
+      --teal: #087f72;
+      --teal-soft: #d9efea;
+      --orange: #b65316;
+      --orange-soft: #fbe8d9;
+      --blue: #245b91;
+      --blue-soft: #dfeaf5;
+      --gold: #8b6811;
+      --gold-soft: #f5ebca;
+      --red: #a23d35;
+      --red-soft: #f7dfdc;
+      --shadow: 0 14px 34px rgba(20,35,31,.08);
+      --radius: 16px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0e1513;
+        --surface: #151f1c;
+        --surface-2: #1b2925;
+        --ink: #edf4f1;
+        --muted: #afbfba;
+        --line: #30423c;
+        --line-strong: #50645d;
+        --teal: #56cbb7;
+        --teal-soft: #173b35;
+        --orange: #f2a067;
+        --orange-soft: #41281b;
+        --blue: #79aee1;
+        --blue-soft: #1a3045;
+        --gold: #e8c563;
+        --gold-soft: #3b3218;
+        --red: #ee8e85;
+        --red-soft: #412321;
+        --shadow: 0 18px 40px rgba(0,0,0,.22);
+      }
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+    a { color: inherit; }
+    button, input { font: inherit; }
+    .page { width: min(1440px, 100%); margin: 0 auto; padding: 28px clamp(18px, 4vw, 64px) 72px; }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, .55fr);
+      gap: clamp(28px, 6vw, 90px);
+      align-items: end;
+      padding: clamp(24px, 5vw, 64px) 0 42px;
+      border-bottom: 1px solid var(--line-strong);
+    }
+    .hero h1 {
+      margin: 0;
+      max-width: 900px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(42px, 7.4vw, 96px);
+      line-height: .94;
+      letter-spacing: -.055em;
+      font-weight: 600;
+    }
+    .hero h1 em { color: var(--teal); font-style: italic; font-weight: 500; }
+    .hero-copy { color: var(--muted); font-size: clamp(17px, 1.5vw, 21px); max-width: 720px; margin: 24px 0 0; }
+    .hero-meta { border-top: 3px solid var(--ink); padding-top: 14px; }
+    .hero-meta strong { display: block; font-size: 30px; letter-spacing: -.04em; }
+    .hero-meta p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 7px;
+      border: 1px solid var(--line); border-radius: 999px;
+      padding: 6px 10px; font-size: 12px; font-weight: 700; background: var(--surface);
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); }
+    .dot.query { background: var(--orange); }
+    .dot.runtime { background: var(--blue); }
+    .dot.choice { background: var(--gold); }
+
+    .pipeline-section { padding: 42px 0; }
+    .section-label { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; color: var(--muted); font-size: 13px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+    .section-label::after { content: ""; height: 1px; flex: 1; background: var(--line); }
+    .pipeline {
+      display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; gap: 12px;
+    }
+    .phase { background: var(--surface); border: 1px solid var(--line); padding: 24px; box-shadow: var(--shadow); }
+    .phase:first-child { border-radius: 22px 8px 8px 22px; }
+    .phase:last-child { border-radius: 8px 22px 22px 8px; }
+    .phase-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 18px; }
+    .phase h2 { margin: 0; font-family: Georgia, serif; font-size: clamp(26px, 3vw, 40px); letter-spacing: -.03em; }
+    .phase small { color: var(--muted); font-weight: 700; }
+    .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .step { background: var(--surface-2); min-height: 98px; padding: 12px; border-top: 3px solid var(--teal); }
+    .phase.online .step { border-top-color: var(--orange); }
+    .step b { display: block; font-size: 13px; margin-bottom: 6px; }
+    .step span { color: var(--muted); font-size: 12px; line-height: 1.35; display: block; }
+    .phase-arrow { align-self: center; font-size: 30px; color: var(--line-strong); }
+    .pipeline-note { margin: 14px 0 0; color: var(--muted); font-size: 13px; }
+
+    .dimension-section { padding: 8px 0 46px; }
+    .dimension-intro, .reading-intro { margin: -4px 0 20px; color: var(--muted); max-width: 820px; }
+    .dimension-groups { display: grid; gap: 28px; }
+    .dimension-group { min-width: 0; }
+    .dimension-group-head {
+      display: flex; align-items: center; gap: 10px; margin: 0 0 12px;
+      color: var(--teal); font-size: 15px; font-weight: 800;
+    }
+    .dimension-group-head::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: 0 0 auto; }
+    .dimension-group.online .dimension-group-head { color: var(--orange); }
+    .dimension-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .dimension-card {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px;
+      min-width: 0;
+    }
+    .dimension-card h3 { margin: 0; font-size: 19px; line-height: 1.2; letter-spacing: -.015em; }
+    .dimension-question { margin: 8px 0 0; color: var(--ink); font-size: 14px; font-weight: 700; }
+    .dimension-values { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; columns: 2; column-gap: 28px; }
+    .dimension-values li { margin: 5px 0; break-inside: avoid; }
+
+    .explorer-head {
+      position: sticky; top: 0; z-index: 10; margin: 0 calc(clamp(18px, 4vw, 64px) * -1);
+      padding: 12px clamp(18px, 4vw, 64px); background: color-mix(in srgb, var(--bg) 92%, transparent);
+      backdrop-filter: blur(14px); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    }
+    .tools { display: flex; align-items: center; gap: 10px; max-width: 1310px; margin: 0 auto; }
+    .search { flex: 1; position: relative; }
+    .search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; color: var(--muted); }
+    .search input {
+      width: 100%; background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 10px;
+      padding: 10px 12px 10px 40px; outline: none;
+    }
+    .search input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 20%, transparent); }
+    .filters { display: flex; gap: 6px; }
+    .filter {
+      border: 1px solid var(--line); color: var(--muted); background: var(--surface); border-radius: 999px;
+      padding: 8px 12px; cursor: pointer; font-size: 12px; font-weight: 800;
+    }
+    .filter[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+    .results { font-size: 12px; color: var(--muted); min-width: 64px; text-align: right; }
+
+    .taxonomy { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: clamp(20px, 4vw, 54px); padding-top: 34px; }
+    .rail { position: sticky; top: 84px; align-self: start; }
+    .rail ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line-strong); }
+    .rail a { display: block; text-decoration: none; padding: 8px 14px; color: var(--muted); font-size: 13px; font-weight: 700; border-left: 3px solid transparent; margin-left: -2px; }
+    .rail a:hover, .rail a:focus, .rail a[aria-current="location"] { color: var(--ink); border-left-color: var(--teal); }
+    .rail a:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+    .rail .source-link { display: inline-block; margin-top: 20px; color: var(--teal); text-decoration: underline; text-underline-offset: 3px; font-size: 13px; }
+    .branches { min-width: 0; }
+    .branch { scroll-margin-top: 90px; margin-bottom: 52px; }
+    .branch-head { display: grid; grid-template-columns: 64px 1fr; gap: 18px; align-items: start; margin-bottom: 18px; }
+    .branch-num { font-family: Georgia, serif; font-size: 42px; color: var(--teal); line-height: 1; }
+    .branch h2 { margin: 0; font-family: Georgia, serif; font-size: clamp(31px, 4vw, 48px); letter-spacing: -.035em; line-height: 1; }
+    .branch-intro { margin: 8px 0 0; color: var(--muted); max-width: 830px; }
+    .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 12px; }
+    .card {
+      grid-column: span 6; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px;
+      min-width: 0; transition: border-color .16s ease, opacity .16s ease;
+    }
+    .card.wide { grid-column: 1 / -1; }
+    .card.third { grid-column: span 4; }
+    .card:hover { border-color: var(--line-strong); }
+    .card.hidden { display: none; }
+    .card-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .card h3 { margin: 0; font-size: 19px; line-height: 1.2; letter-spacing: -.015em; }
+    .stage-group { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
+    .stage { flex: 0 0 auto; font-size: 10px; line-height: 1; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; padding: 6px 7px; border-radius: 6px; background: var(--teal-soft); color: var(--teal); }
+    .stage.query { background: var(--orange-soft); color: var(--orange); }
+    .stage.runtime { background: var(--blue-soft); color: var(--blue); }
+    .stage.choice { background: var(--gold-soft); color: var(--gold); }
+    .card p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+    .card ul { margin: 12px 0 0; padding-left: 18px; }
+    .card li { margin: 7px 0; font-size: 13px; }
+    .procon { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .procon div { background: var(--surface-2); padding: 11px; border-radius: 9px; font-size: 12px; }
+    .procon b { display: block; color: var(--ink); margin-bottom: 4px; }
+    .open-note { margin-top: 12px; padding: 10px 12px; background: var(--gold-soft); color: var(--ink); border-radius: 9px; font-size: 12px; }
+    .distinction-group { margin-top: 15px; }
+    .distinction-title { margin: 0 0 7px; color: var(--gold); font-size: 11px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
+    .distinction-group .open-note { margin-top: 7px; }
+    .safeguards ul { margin: 8px 0 0; padding-left: 18px; }
+    .safeguards li { margin: 6px 0; }
+    .mini-flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; margin-top: 15px; }
+    .mini-flow span { padding: 9px 7px; border-radius: 8px; background: var(--surface-2); font-size: 11px; font-weight: 800; text-align: center; position: relative; overflow-wrap: anywhere; }
+    .mini-flow span:not(:last-child)::after { content: ""; }
+    .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+    .metric { background: var(--surface-2); padding: 12px; border-radius: 9px; min-height: 100px; }
+    .metric b { display: block; font-size: 13px; }
+    .metric span { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.35; }
+    .decision { overflow: hidden; padding: 0; }
+    .decision table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .decision th, .decision td { text-align: left; vertical-align: top; padding: 13px 15px; border-bottom: 1px solid var(--line); }
+    .decision th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; background: var(--surface-2); }
+    .decision tr:last-child td { border-bottom: 0; }
+    .source { display: block; margin-top: 12px; color: var(--muted); font-size: 10px; line-height: 1.5; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+    .source a { color: inherit; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+    .source a:hover, .source a:focus { color: var(--teal); text-decoration-color: var(--teal); }
+    .evolution { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 0; margin-top: 14px; }
+    .era { padding: 14px 10px; border-top: 4px solid var(--line-strong); position: relative; }
+    .era::before { content: ""; position: absolute; width: 9px; height: 9px; background: var(--surface); border: 3px solid var(--teal); border-radius: 50%; top: -7px; left: 10px; }
+    .era b { display: block; font-size: 12px; margin-bottom: 5px; }
+    .era span { display: block; color: var(--muted); font-size: 10px; line-height: 1.35; }
+    .empty { display: none; padding: 44px 20px; text-align: center; color: var(--muted); border: 1px dashed var(--line-strong); border-radius: 16px; }
+    .empty.show { display: block; }
+    .outside-section { margin-top: 20px; padding: 22px 0 10px; border-top: 1px solid var(--line-strong); }
+    .outside-section h2 { margin: 0; font-family: Georgia, serif; font-size: clamp(27px, 3.4vw, 40px); letter-spacing: -.03em; }
+    .outside-section p { margin: 8px 0 12px; color: var(--muted); max-width: 850px; }
+    .outside-list { display: flex; flex-wrap: wrap; gap: 7px; margin: 0; padding: 0; list-style: none; }
+    .outside-list li { border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; background: var(--surface); font-size: 12px; font-weight: 700; }
+    .reading-section { padding-top: 42px; scroll-margin-top: 90px; }
+    .reading-section h2 { margin: 0; font-family: Georgia, serif; font-size: clamp(31px, 4vw, 48px); letter-spacing: -.035em; line-height: 1; }
+    .reading-intro { margin-top: 10px; }
+    .path-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .path-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; min-width: 0; }
+    .path-card h3 { margin: 0 0 12px; font-size: 17px; line-height: 1.25; }
+    .path-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 5px; margin: 0; padding: 0; list-style: none; }
+    .path-flow li { display: flex; align-items: center; gap: 5px; min-width: 0; color: var(--muted); font-size: 12px; }
+    .path-flow li:not(:first-child)::before { content: "→"; color: var(--line-strong); font-weight: 900; }
+    .path-flow a { color: var(--ink); text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+    .path-flow a:hover, .path-flow a:focus { color: var(--teal); text-decoration-color: var(--teal); }
+    [id].card { scroll-margin-top: 94px; }
+    footer { margin-top: 62px; padding-top: 24px; border-top: 1px solid var(--line-strong); display: grid; grid-template-columns: 1fr auto; gap: 24px; color: var(--muted); font-size: 12px; }
+    footer p { margin: 0; max-width: 760px; }
+    footer a { color: var(--teal); font-weight: 800; text-underline-offset: 3px; }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .pipeline { grid-template-columns: 1fr; }
+      .phase:first-child, .phase:last-child { border-radius: 18px; }
+      .phase-arrow { transform: rotate(90deg); justify-self: center; line-height: 1; }
+      .taxonomy { grid-template-columns: 1fr; }
+      .rail { position: static; }
+      .rail ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-left: 0; border-top: 1px solid var(--line-strong); }
+      .rail a { height: 100%; margin-left: 0; border-left-width: 3px; }
+      .rail .source-link { height: auto; }
+      .path-grid { grid-template-columns: 1fr; }
+      .card.third { grid-column: span 6; }
+      .evolution { grid-template-columns: repeat(4, 1fr); row-gap: 14px; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 660px) {
+      .page { padding-top: 12px; }
+      .hero { padding-top: 30px; }
+      .hero h1 { font-size: clamp(44px, 14vw, 66px); }
+      .steps { grid-template-columns: repeat(2, 1fr); }
+      .dimension-grid { grid-template-columns: 1fr; }
+      .dimension-values { columns: 1; }
+      .rail ol { grid-template-columns: 1fr; }
+      .tools { align-items: stretch; flex-wrap: wrap; }
+      .search { flex-basis: 100%; }
+      .filters { overflow: visible; flex-wrap: wrap; }
+      .results { margin-left: auto; align-self: center; }
+      .branch-head { grid-template-columns: 44px 1fr; gap: 8px; }
+      .branch-num { font-size: 30px; }
+      .branch h2 { font-size: 32px; }
+      .card, .card.third { grid-column: 1 / -1; padding: 17px; }
+      .procon { grid-template-columns: 1fr; }
+      .mini-flow { grid-template-columns: 1fr; }
+      .mini-flow span:not(:last-child)::after { content: "↓"; right: auto; left: 50%; top: auto; bottom: -12px; transform: translateX(-50%); }
+      .evolution { grid-template-columns: 1fr 1fr; row-gap: 16px; }
+      .path-flow { display: grid; gap: 6px; }
+      .path-flow li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 7px; align-items: start; }
+      .path-flow li:first-child { grid-template-columns: 1fr; }
+      .path-flow li:not(:first-child)::before { content: "↓"; text-align: center; }
+      .decision { overflow: visible; }
+      .decision table, .decision tbody, .decision tr, .decision td { display: block; }
+      .decision thead { display: none; }
+      .decision tr { padding: 12px 14px; border-bottom: 1px solid var(--line); }
+      .decision tr:last-child { border-bottom: 0; }
+      .decision td { border: 0; padding: 4px 0; }
+      .decision td:first-child { font-weight: 900; font-size: 15px; }
+      .decision td:nth-child(2)::before { content: "Choose when: "; font-weight: 800; color: var(--ink); }
+      .decision td:nth-child(3)::before { content: "Watch for: "; font-weight: 800; color: var(--ink); }
+      footer { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+  <nav style="position:sticky;top:0;z-index:50;background:Canvas;color:CanvasText;border-bottom:1px solid #888;padding:10px 20px;font:600 14px system-ui,sans-serif;"><a href="../" style="color:inherit;text-decoration:none;">&larr; AI Study Material</a></nav>
+  <main class="page">
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <h1 id="page-title">A field guide to <em>retrieval-augmented generation</em></h1>
+        <p class="hero-copy">RAG is not one pattern. It is a family of choices across preparation, retrieval, reasoning, modality, architecture, and evaluation. This taxonomy organizes those choices by where they act in the system.</p>
+      </div>
+      <aside class="hero-meta" aria-label="Research scope">
+        <strong>21 talks · 6 branches</strong>
+        <p>21 video transcripts, collected September 2026; one file (RAG vs agentic AI: how LLMs connect data) is dated August 30, 2026 and has no metadata header.</p>
+        <div class="legend" aria-label="Lifecycle legend">
+          <span class="tag"><i class="dot"></i>Index time</span>
+          <span class="tag"><i class="dot query"></i>Query time</span>
+          <span class="tag"><i class="dot runtime"></i>Runtime</span>
+          <span class="tag"><i class="dot choice"></i>Architecture</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="pipeline-section" aria-labelledby="pipeline-title">
+      <div class="section-label" id="pipeline-title">The canonical pipeline</div>
+      <div class="pipeline">
+        <article class="phase">
+          <div class="phase-head"><h2>Offline</h2><small>build the index</small></div>
+          <div class="steps">
+            <div class="step"><b>1 · Ingest</b><span>Bring in source documents and preserve provenance.</span></div>
+            <div class="step"><b>2 · Parse</b><span>Recover headings, tables, images, and reading order.</span></div>
+            <div class="step"><b>3 · Chunk</b><span>Split into retrievable units without losing useful context.</span></div>
+            <div class="step"><b>4 · Embed + store</b><span>Encode chunks and write them to a searchable index.</span></div>
+          </div>
+        </article>
+        <div class="phase-arrow" aria-hidden="true">→</div>
+        <article class="phase online">
+          <div class="phase-head"><h2>Online</h2><small>answer a question</small></div>
+          <div class="steps">
+            <div class="step"><b>1 · Ask</b><span>Turn the user question into one or more searches.</span></div>
+            <div class="step"><b>2 · Retrieve</b><span>Find candidates; typically return 3–5 passages.</span></div>
+            <div class="step"><b>3 · Augment</b><span>Combine instructions, evidence, and the question.</span></div>
+            <div class="step"><b>4 · Generate</b><span>Answer from grounded context and expose sources.</span></div>
+          </div>
+        </article>
+      </div>
+      <p class="pipeline-note">RAG addresses two core LLM limits: unsupported answers and knowledge frozen at training time. Updating the store changes the next retrieval without retraining the model.</p>
+    </section>
+
+    <section class="dimension-section" aria-labelledby="dimensions-title">
+      <div class="section-label" id="dimensions-title">Describe any RAG system in seven questions</div>
+      <p class="dimension-intro">Instead of asking only 'Which RAG type is this?', ask these seven questions. The first two shape the knowledge before any query is asked; the other five decide what happens when a query arrives.</p>
+      <div class="dimension-groups">
+        <section class="dimension-group" aria-labelledby="offline-dimensions-title">
+          <h3 class="dimension-group-head" id="offline-dimensions-title">Offline: build the knowledge</h3>
+          <div class="dimension-grid">
+            <article class="dimension-card">
+              <h3>Knowledge representation</h3>
+              <p class="dimension-question">What structure is preserved in the searchable material?</p>
+              <ul class="dimension-values"><li>Flat chunks</li><li>Structure-aware or context-enriched chunks</li><li>Parent-child hierarchy</li><li>Document tree</li><li>Entity-relationship graph</li></ul>
+            </article>
+            <article class="dimension-card">
+              <h3>Knowledge access and lifecycle</h3>
+              <p class="dimension-question">Where does knowledge live and how is it maintained?</p>
+              <ul class="dimension-values"><li>Indexed document collection</li><li>Multiple knowledge bases</li><li>Connected external sources</li><li>Incremental ingestion</li><li>Metadata, permissions, and lineage</li></ul>
+            </article>
+          </div>
+        </section>
+        <section class="dimension-group online" aria-labelledby="online-dimensions-title">
+          <h3 class="dimension-group-head" id="online-dimensions-title">Online: answer the query</h3>
+          <div class="dimension-grid">
+            <article class="dimension-card">
+              <h3>Control flow</h3>
+              <p class="dimension-question">Who decides when, where, and how often to retrieve?</p>
+              <ul class="dimension-values"><li>Single-pass pipeline</li><li>Fixed multi-stage pipeline</li><li>Agent-selected source or tool</li><li>Iterative or self-reflective loop</li></ul>
+            </article>
+            <article class="dimension-card">
+              <h3>Retrieval signal</h3>
+              <p class="dimension-question">What makes evidence relevant enough to return?</p>
+              <ul class="dimension-values"><li>Lexical matching</li><li>Embedding similarity</li><li>Sparse + dense fusion</li><li>Graph relationships</li><li>Reasoning over a document outline</li></ul>
+            </article>
+            <article class="dimension-card">
+              <h3>Context assembly</h3>
+              <p class="dimension-question">What evidence is actually passed to the generator?</p>
+              <ul class="dimension-values"><li>Selected passages</li><li>Expanded parent sections or documents</li><li>Ranked, merged, or compressed evidence</li><li>Metadata-filtered and permission-scoped context</li></ul>
+            </article>
+            <article class="dimension-card">
+              <h3>Modality</h3>
+              <p class="dimension-question">What is searched, and what can the generator see?</p>
+              <ul class="dimension-values"><li>Text only</li><li>Media converted to text</li><li>Text retrieval with original media</li><li>Aligned cross-modal embeddings with multimodal generation</li></ul>
+            </article>
+            <article class="dimension-card">
+              <h3>Answer policy</h3>
+              <p class="dimension-question">What should the generator do with the evidence?</p>
+              <ul class="dimension-values"><li>Refuse when evidence is insufficient</li><li>Ask for clarification</li><li>Present conflicting answers</li><li>Cite sources</li><li>Choose output format (text, chart, code)</li></ul>
+            </article>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <div class="explorer-head" aria-label="Taxonomy filters">
+      <div class="tools">
+        <label class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+          <input id="search" type="search" placeholder="Search the taxonomy" aria-label="Search taxonomy" autocomplete="off" />
+        </label>
+        <div class="filters" aria-label="Filter by lifecycle stage">
+          <button class="filter" type="button" data-filter="all" aria-pressed="true">All</button>
+          <button class="filter" type="button" data-filter="index">Index</button>
+          <button class="filter" type="button" data-filter="query">Query</button>
+          <button class="filter" type="button" data-filter="runtime">Runtime</button>
+          <button class="filter" type="button" data-filter="choice">Architecture</button>
+        </div>
+        <div class="results" id="results" aria-live="polite">33 topics</div>
+      </div>
+    </div>
+
+    <section class="taxonomy" aria-label="RAG taxonomy explorer">
+      <nav class="rail" aria-label="Taxonomy branches">
+        <ol>
+          <li><a href="#foundation" aria-current="location">01 · Foundation</a></li>
+          <li><a href="#prepare">02 · Prepare knowledge</a></li>
+          <li><a href="#retrieve">03 · Retrieve evidence</a></li>
+          <li><a href="#reason">04 · Expand the substrate</a></li>
+          <li><a href="#choose">05 · Choose the architecture</a></li>
+          <li><a href="#measure">06 · Measure & operate</a></li>
+        </ol>
+        <a class="source-link" href="https://www.youtube.com/playlist?list=PLBa9Lq6VGMSE" target="_blank" rel="noopener noreferrer">Open source playlist ↗</a>
+      </nav>
+
+      <div class="branches">
+        <section class="branch" id="foundation">
+          <header class="branch-head"><span class="branch-num">01</span><div><h2>Foundation</h2><p class="branch-intro">Start with the fixed contract: retrieve external evidence, place it beside the question, then generate. Everything else in the taxonomy changes how evidence is prepared, found, or used.</p></div></header>
+          <div class="grid">
+            <article class="card wide" data-stage="query" id="rag-contract">
+              <div class="card-head"><h3>The RAG contract</h3><span class="stage query">Query time</span></div>
+              <p>The prompt contains three things: an instruction, retrieved content, and the user question. The model generates from this assembled context and can cite the evidence. The stack remains modular: vector store, embedding model, and LLM can be swapped independently.</p>
+              <div class="mini-flow" aria-label="Five-step RAG process"><span>Ask</span><span>Retrieval</span><span>Return</span><span>Augmentation</span><span>Generation</span></div>
+              <span class="source">Sources: <a href="https://www.youtube.com/watch?v=T-D1OfcDW1M" target="_blank" rel="noopener noreferrer">WhatisRetrievalAugmentedGenerationRAG</a>; <a href="https://www.youtube.com/watch?v=X95MFcYH1_s" target="_blank" rel="noopener noreferrer">MCPvsRAGHowAIAgentsLLMsConnecttoData</a>; <a href="http://youtube.com/watch?v=HdafI0t3sEY" target="_blank" rel="noopener noreferrer">RAGvsCAGSolvingKnowledgeGapsinAIModels</a></span>
+            </article>
+            <article class="card" data-stage="query" id="problems-rag-solves">
+              <div class="card-head"><h3>Problems it is designed to solve</h3><span class="stage query">Query time</span></div>
+              <ul><li><b>Unsupported answers:</b> primary-source context makes claims checkable.</li><li><b>Stale knowledge:</b> update the store instead of retraining the model.</li><li><b>False certainty:</b> a grounded system can say “I don’t know” when the store has no answer.</li><li><b>Excessive refusal:</b> weak retrieval can trigger too many “I don’t know” responses even when the answer exists in the source material.</li></ul>
+              <span class="source">Source: <a href="https://www.youtube.com/watch?v=T-D1OfcDW1M" target="_blank" rel="noopener noreferrer">WhatisRetrievalAugmentedGenerationRAG</a></span>
+            </article>
+            <article class="card" data-stage="choice" id="more-context-is-not-always-better">
+              <div class="card-head"><h3>More context is not always better</h3><span class="stage choice">Architecture</span></div>
+              <p>Adding retrieved tokens produces marginal accuracy gains, then can degrade performance through noise and redundancy. It also increases cost and wait time. The optimization target is signal, not volume.</p>
+              <span class="source">Source: <a href="https://www.youtube.com/watch?v=fB2JQXEH_94" target="_blank" rel="noopener noreferrer">RAGvsAgenticAIHow LLMsConnectDataforSmarterAI</a></span>
+            </article>
+
+            <article class="card" data-stage="choice" id="evolution-of-rag">
+              <div class="card-head"><h3>The evolution of RAG</h3><span class="stage choice">Architecture</span></div>
+              <div class="evolution" aria-label="RAG evolution timeline">
+                <div class="era"><b>Keyword</b><span>Sparse retrieval has about 50 years of history; exact terms, inverted indices, TF-IDF/BM25.</span></div>
+                <div class="era"><b>Semantic</b><span>Dense retrieval is about 5 to 10 years old; embeddings add intent beyond exact wording.</span></div>
+                <div class="era"><b>Hybrid</b><span>Practical deployments are about 2 to 3 years old; keyword precision plus semantic recall.</span></div>
+                <div class="era"><b>LLMs</b><span>Fluent generation, but no private or current knowledge.</span></div>
+                <div class="era"><b>Naive RAG</b><span>One retrieval pass augments one prompt.</span></div>
+                <div class="era"><b>Advanced</b><span>Rerankers, rewrites, hybrid retrieval.</span></div>
+                <div class="era"><b>Agentic</b><span>Retrieval becomes a decision inside reasoning.</span></div>
+              </div>
+              <p>Advanced RAG made retrieval smarter but left the pipeline predetermined. Agentic RAG decides whether retrieval is needed, where to search, what to ask, and when to stop. BM25 can outperform neural methods on domain-specific terms, so evolution does not mean sparse retrieval became obsolete.</p>
+              <span class="source">Sources: <a href="https://www.youtube.com/watch?v=JB2P5Gk23VI" target="_blank" rel="noopener noreferrer">RAGsEvolutionFromSimpleRetrievaltoAgenticAI</a>; <a href="https://youtu.be/r0Dciuq0knU?si=k653hUA6b49kLhF5" target="_blank" rel="noopener noreferrer">Top3RAGRetrievalStrategiesSparseDenseHybridExplained</a></span>
+            </article>
+          </div>
+        </section>
+
+        <section class="branch" id="prepare">
+          <header class="branch-head"><span class="branch-num">02</span><div><h2>Prepare knowledge</h2><p class="branch-intro">Index-time work determines the ceiling of retrieval quality. Preserve meaning, structure, permissions, and provenance before a query ever arrives.</p></div></header>
+          <div class="grid">
+            <article class="card third" data-stage="index" id="naive-chunking">
+              <div class="card-head"><h3>Naive chunking</h3><span class="stage">Index time</span></div>
+              <p>Fixed-size splits, paragraphs, sliding windows, or recursive rules. Cheap and easy, but headings can separate from their paragraphs and tables from their explanations.</p>
+              <span class="source">Sources: <a href="https://www.youtube.com/watch?v=vRZNJWw78BQ" target="_blank" rel="noopener noreferrer">WhatIsChunklessRAGHowDoclingAIAgentsNavigateDocuments</a>; <a href="https://youtube.com/watch?v=tLMViADvSNE" target="_blank" rel="noopener noreferrer">EveryRAGStrategyExplainedin13MinutesNoFluff</a></span>
+            </article>
+            <article class="card third" data-stage="index" id="context-aware-chunking">
+              <div class="card-head"><h3>Context-aware chunking</h3><span class="stage">Index time</span></div>
+              <p>Detect natural boundaries so splits preserve document structure rather than cutting every fixed number of characters. Docling’s hybrid chunking is the implementation named in the talk, which characterizes the approach as free and fast.</p>
+              <span class="source">Source: <a href="https://youtube.com/watch?v=tLMViADvSNE" target="_blank" rel="noopener noreferrer">EveryRAGStrategyExplainedin13MinutesNoFluff</a></span>
+            </article>
+            <article class="card third" data-stage="index" id="late-chunking">
+              <div class="card-head"><h3>Late chunking</h3><span class="stage">Index time</span></div>
+              <p>Embed the whole document first, then divide token embeddings so each chunk retains full-document context. It needs long-context embedding models and is described as the most complex strategy.</p>
+              <div class="open-note"><b>Experience caveat:</b> the speaker had not used this approach at recording time.</div>
+              <span class="source">Source: <a href="https://youtube.com/watch?v=tLMViADvSNE" target="_blank" rel="noopener noreferrer">EveryRAGStrategyExplainedin13MinutesNoFluff</a></span>
+            </article>
+            <article class="card" data-stage="index" id="contextual-retrieval">
+              <div class="card-head"><h3>Contextual retrieval</h3><span class="stage">Index time</span></div>
+              <p>An LLM prepends a short description of how each chunk fits the document, separated from the chunk by “---”; the enriched text is embedded together. Promising gains, but an LLM touches every chunk.</p>
+              <div class="procon"><div><b>Gain</b>Local text retains its role in the whole.</div><div><b>Cost</b>Slower and more expensive indexing.</div></div>
+              <span class="source">Source: <a href="https://youtube.com/watch?v=tLMViADvSNE" target="_blank" rel="noopener noreferrer">EveryRAGStrategyExplainedin13MinutesNoFluff</a></span>
+            </article>
+            <article class="card" data-stage="index query" id="hierarchical-rag">
+              <div class="card-head"><h3>Hierarchical RAG</h3><span class="stage-group"><span class="stage">Index time</span><span class="stage query">Query time</span></span></div>
+              <p>Store parent–child relationships as metadata. Search small units such as paragraphs for precision, then return the larger parent for context: “searching small with context, returning big.”</p>
+              <div class="procon"><div><b>Best when</b>The parent document fits in context.</div><div><b>Trade-off</b>More complexity and some unpredictability.</div></div>
+              <div class="distinction-group"><h4 class="distinction-title">Important distinctions</h4><div class="open-note"><b>Editorial view:</b> hierarchical retrieval does not inherently require an agent. Parent-child expansion is a representation and context-assembly choice; an agent may choose to use it. The transcript calls it “sort of a subset of agentic RAG.”</div></div>
+              <span class="source">Source: <a href="https://youtube.com/watch?v=tLMViADvSNE" target="_blank" rel="noopener noreferrer">EveryRAGStrategyExplainedin13MinutesNoFluff</a></span>
+            </article>
+            <article class="card wide" data-stage="index" id="document-intelligence-with-docling">
+              <div class="card-head"><h3>Document intelligence with Docling</h3><span class="stage">Index time</span></div>
+              <p>Docling is an MIT-licensed Linux Foundation Data & AI project that converts PDFs, Word, PowerPoint, scanned images, and spreadsheets into structured Markdown, text, or JSON. Its hierarchical document model preserves headings, tables, reading order, and element-level provenance such as page and bounding box.</p>
+              <ul><li>Structure-aware chunking keeps sections, tables, captions, titles, and headers connected.</li><li>Optional figure descriptions make visual elements retrievable.</li><li>Schema-based extraction can return validated fields such as invoice number and price.</li><li>Outputs integrate with LangChain, LlamaIndex, Haystack, and LangFlow.</li><li>Docling also offers an MCP server and an agent that can write, edit, extract, and enrich document content.</li></ul>
+              <span class="source">Source: <a href="https://www.youtube.com/watch?v=rrQHnibpXX8" target="_blank" rel="noopener noreferrer">UnlockBetterRAGAIAgentswithDocling</a></span>
+            </article>
+            <article class="card" data-stage="runtime" id="chunkless-rag">
+              <div class="card-head"><h3>Chunkless RAG</h3><span class="stage runtime">Runtime</span></div>
+              <p>Keep the document tree and let an agent navigate titles, sections, paragraphs, tables, and images. It is strongest for long, organized documents where relationships across sections matter.</p>
+              <div class="procon"><div><b>Best when</b>One structured document needs precise, cross-section reasoning.</div><div><b>Not a replacement</b>Chunk search still fits millions of documents and fuzzy discovery.</div></div>
+              <p>A pragmatic combination: similarity search finds the document; structure navigation finds the answer inside it. The trade-off is more model calls and more latency. Producing a clean, navigable document tree is “most of the engineering.”</p>
+              <div class="distinction-group"><h4 class="distinction-title">Important distinctions</h4><div class="open-note">A document tree is not the same thing as a knowledge graph. Chunkless RAG follows author and document hierarchy; GraphRAG follows entities and their relationships.</div><div class="open-note">Chunkless does not mean retrieval-free or context-unlimited. It navigates preserved document structure and selects relevant sections instead of relying on a flat chunk index.</div></div>
+              <span class="source">Source: <a href="https://www.youtube.com/watch?v=vRZNJWw78BQ" target="_blank" rel="noopener noreferrer">WhatIsChunklessRAGHowDoclingAIAgentsNavigateDocuments</a></span>
+            </article>
+            <article class="card" data-stage="index" id="integration-governance">
+              <div class="card-head"><h3>Integration + governance</h3><span class="stage">Index time</span></div>
+              <p>Repeatable pipelines connect unstructured sources, extract text, deduplicate, annotate language, remove PII, chunk, embed, and load only deltas. Native ACLs preserve document-level permissions.</p>
+              <p>Governance then adds entities, classification, quality checks, contextual metadata, validation rules, a central catalog, and lineage.</p>
+              <div class="open-note"><b>Enterprise claim in the source:</b> over 90% of enterprise data is unstructured, while under 1% reaches generative-AI projects.</div>
+              <span class="source">Source: <a href="https://www.youtube.com/watch?v=sMQ5R92F86o" target="_blank" rel="noopener noreferrer">UnlockingSmarterAIAgentswithUnstructuredDataRAGVectorDatabases</a></span>
+            </article>
+            <article class="card wide" data-stage="choice" id="complex-document-rag-failure">
+              <div class="card-head"><h3>Why complex-document RAG fails</h3><span class="stage choice">Architecture</span></div>
+              <div class="procon"><div><b>Ambiguity</b>One corpus can contain multiple correct answers because the question leaves time or scope unstated.</div><div><b>Contradiction</b>Old and new policy, federal and state rules, or multiple authors can disagree.</div></div>
+              <p>Fix unforced data errors, ask clarifying questions, and keep the answer “less than or equal to the data”: if the corpus admits X, Y, or Z, present all three with context rather than collapsing uncertainty into one claim. Presenting a legal opinion as settled fact is a design error, not a hallucination.</p>
+              <span class="source">Sources: <a href="https://www.youtube.com/watch?v=xc63tFIIfeA" target="_blank" rel="noopener noreferrer">WhyRAGSolutionsFailwithComplexDocumentsVectorDatabases</a>; <a href="https://www.youtube.com/watch?v=vRZNJWw78BQ" target="_blank" rel="noopener noreferrer">WhatIsChunklessRAGHowDoclingAIAgentsNavigateDocuments</a></span>
+            </article>
+          </div>
+        </section>
+
+        <section class="branch" id="retrieve">
+          <header class="branch-head"><span class="branch-num">03</span><div><h2>Retrieve evidence</h2><p class="branch-intro">Retrieval begins with lexical and semantic recall, then adds query transformation, fusion, and re-ranking to raise precision without flooding the model.</p></div></header>
+          <div class="grid">
+            <article class="card third" data-stage="query" id="sparse-retrieval">
+              <div class="card-head"><h3>Sparse retrieval</h3><span class="stage query">Query time</span></div>
+              <p>TF-IDF and BM25 score exact terms over an inverted index. It is cheap, scalable, and strong for code, logs, legal clauses, and rare domain terms. BM25 can outperform neural methods on domain-specific terms.</p>
+              <div class="procon"><div><b>Wins</b>Exact wording.</div><div><b>Misses</b>Synonyms and paraphrase.</div></div>
+              <span class="source">Source: <a href="https://youtu.be/r0Dciuq0knU?si=k653hUA6b49kLhF5" target="_blank" rel="noopener noreferrer">Top3RAGRetrievalStrategiesSparseDenseHybridExplained</a></span>
+            </article>
+            <article class="card third" data-stage="query" id="dense-retrieval">
+              <div class="card-head"><h3>Dense retrieval</h3><span class="stage query">Query time</span></div>
+              <p>Embedding models map queries and documents into a shared vector space; ANN or kNN ranks semantic similarity. Strong for natural-language variation and unstructured knowledge.</p>
+              <div class="procon"><div><b>Wins</b>Meaning across different words.</div><div><b>Misses</b>Rare jargon and very short queries.</div></div>
+              <span class="source">Source: <a href="https://youtu.be/r0Dciuq0knU?si=k653hUA6b49kLhF5" target="_blank" rel="noopener noreferrer">Top3RAGRetrievalStrategiesSparseDenseHybridExplained</a></span>
+            </article>
+            <article class="card third" data-stage="query" id="hybrid-retrieval">
+              <div class="card-head"><h3>Hybrid retrieval</h3><span class="stage query">Query time</span></div>
+              <p>Run semantic and keyword retrieval in parallel, then fuse the lists with a weighted sum (example: 70% dense / 30% sparse) or reciprocal rank fusion.</p>
+              <div class="procon"><div><b>Why it wins</b>Semantic recall plus exact-term precision.</div><div><b>Source verdict</b>The default for serious RAG deployments.</div></div>
+              <div class="distinction-group"><h4 class="distinction-title">Important distinctions</h4><div class="open-note">Qualify the word “hybrid”: distinguish sparse + dense hybrid retrieval from hybrid chunking, text retrieval with original-media generation, and RAG + CAG combinations. The sources use “hybrid” in all these senses.</div></div>
+              <span class="source">Source: <a href="https://youtu.be/r0Dciuq0knU?si=k653hUA6b49kLhF5" target="_blank" rel="noopener noreferrer">Top3RAGRetrievalStrategiesSparseDenseHybridExplained</a></span>
+            </article>
+            <article class="card" data-stage="query" id="reranking">
+              <div class="card-head"><h3>Re-ranking</h3><span class="stage query">Query time</span></div>
+              <p>Retrieve broadly, then use a specialized model, often a cross-encoder, to reduce 20–50 candidates to the most relevant few. This considers more knowledge without forcing all of it into the LLM.</p>
+              <div class="open-note"><b>Source recommendation:</b> the first strategy to add for almost every RAG implementation; a second model raises cost slightly.</div>
+              <span class="source">Sources: <a href="https://youtube.com/watch?v=tLMViADvSNE" target="_blank" rel="noopener noreferrer">EveryRAGStrategyExplainedin13MinutesNoFluff</a>; <a href="https://www.youtube.com/watch?v=fB2JQXEH_94" target="_blank" rel="noopener noreferrer">RAGvsAgenticAIHow LLMsConnectDataforSmarterAI</a></span>
+            </article>
+            <article class="card" data-stage="query" id="query-transformation">
+              <div class="card-head"><h3>Query transformation</h3><span class="stage query">Query time</span></div>
+              <p><b>Expansion</b> rewrites one query with useful detail. <b>Multi-query RAG</b> generates several variants and searches them in parallel for broader coverage.</p>
+              <div class="procon"><div><b>Gain</b>Precision or coverage.</div><div><b>Cost</b>An extra LLM call; multi-query also adds database searches.</div></div>
+              <span class="source">Source: <a href="https://youtube.com/watch?v=tLMViADvSNE" target="_blank" rel="noopener noreferrer">EveryRAGStrategyExplainedin13MinutesNoFluff</a></span>
+            </article>
+            <article class="card" data-stage="runtime" id="self-reflective-rag">
+              <div class="card-head"><h3>Self-reflective RAG</h3><span class="stage runtime">Runtime</span></div>
+              <p>Search, have an LLM grade the retrieved chunks against the question (for example, 1–5), then retry with a refined query below a threshold (for example, under 3).</p>
+              <div class="procon"><div><b>Gain</b>A simple correction loop.</div><div><b>Cost</b>Grading every search and possible retries.</div></div>
+              <span class="source">Source: <a href="https://youtube.com/watch?v=tLMViADvSNE" target="_blank" rel="noopener noreferrer">EveryRAGStrategyExplainedin13MinutesNoFluff</a></span>
+            </article>
+            <article class="card" data-stage="index query" id="fine-tuned-embeddings">
+              <div class="card-head"><h3>Fine-tuned embeddings</h3><span class="stage-group"><span class="stage">Index time</span><span class="stage query">Query time</span></span></div>
+              <p>Train the embedding model on a domain dataset, then use it for both indexing and queries. The source cites 5–10% accuracy gains and notes that a small specialized model can beat a larger generic one on its target task.</p>
+              <div class="open-note"><b>Constraint:</b> requires substantial training data and ongoing infrastructure; strongest when a trainable domain dataset exists. The talk’s sentiment example aligns “my order was late” with “items are always sold out” because both express negative sentiment despite different vocabulary.</div>
+              <span class="source">Source: <a href="https://youtube.com/watch?v=tLMViADvSNE" target="_blank" rel="noopener noreferrer">EveryRAGStrategyExplainedin13MinutesNoFluff</a></span>
+            </article>
+            <article class="card" data-stage="choice" id="practical-starter-stack">
+              <div class="card-head"><h3>A practical starter stack</h3><span class="stage choice">Architecture</span></div>
+              <p>The strategy overview recommends combining 3–5 techniques. Its tactical trio is <b>re-ranking + agentic RAG + context-aware chunking</b>, described as hybrid RAG with Docling.</p>
+              <p>Candidate search and storage tools named across the collection include Elasticsearch, Lucene, Milvus, JVector, Weaviate, Astra DB, and pgvector.</p>
+              <span class="source">Source: <a href="https://youtube.com/watch?v=tLMViADvSNE" target="_blank" rel="noopener noreferrer">EveryRAGStrategyExplainedin13MinutesNoFluff</a></span>
+            </article>
+          </div>
+        </section>
+
+        <section class="branch" id="reason">
+          <header class="branch-head"><span class="branch-num">04</span><div><h2>Expand the substrate</h2><p class="branch-intro">Text chunks in one vector index are only the baseline. Richer RAG adds native media, graph relationships, and agents that choose how,and whether,to retrieve.</p></div></header>
+          <div class="grid">
+            <article class="card wide" data-stage="choice" id="multimodal-rag">
+              <div class="card-head"><h3>Multimodal RAG: three levels</h3><span class="stage choice">Architecture</span></div>
+              <div class="decision">
+                <table>
+                  <thead><tr><th>Level</th><th>Mechanism</th><th>Trade-off</th></tr></thead>
+                  <tbody>
+                    <tr><td>1 · Text-ify everything</td><td>Caption images; transcribe audio/video; run normal text RAG.</td><td>Simple, but captions lose visual nuance.</td></tr>
+                    <tr><td>2 · Hybrid multimodal</td><td>Retrieve text captions/transcripts, then pass the linked original artifact to a multimodal LLM.</td><td>The model sees the real media, but retrieval is only as good as its text surrogate.</td></tr>
+                    <tr><td>3 · Full multimodal</td><td>Aligned text, image, and audio encoders share one vector space; retrieve every modality directly.</td><td>Richest grounding; stronger encoders, more compute, and careful context summarization.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="distinction-group"><h4 class="distinction-title">Important distinctions</h4><div class="open-note">Multimodal describes the handling of media, not an orchestration policy. Record both retrieval modality and generator input modality.</div></div>
+              <span class="source">Sources: <a href="https://www.youtube.com/watch?v=anLahYrEFiQ" target="_blank" rel="noopener noreferrer">WhatisMultimodalRAGUnlockingLLMswithVectorDatabases</a>; <a href="https://www.youtube.com/watch?v=rrQHnibpXX8" target="_blank" rel="noopener noreferrer">UnlockBetterRAGAIAgentswithDocling</a></span>
+            </article>
+            <article class="card" data-stage="choice" id="graphrag">
+              <div class="card-head"><h3>GraphRAG</h3><span class="stage choice">Architecture</span></div>
+              <p>Combine a graph of entity relationships with vector search. The graph scopes the question,what is connected to this entity and which documents relate,while vectors fill in detail within that scope.</p>
+              <div class="procon"><div><b>Best when</b>Data is highly interconnected.</div><div><b>Cost</b>LLM-based graph construction is slow and expensive.</div></div>
+              <div class="open-note"><b>Coverage caveat:</b> GraphRAG appears briefly in two source talks; no Neptune, Microsoft GraphRAG, or implementation deep dive is present.</div>
+              <span class="source">Sources: <a href="https://youtube.com/watch?v=tLMViADvSNE" target="_blank" rel="noopener noreferrer">EveryRAGStrategyExplainedin13MinutesNoFluff</a>; <a href="https://www.youtube.com/watch?v=pN-LfxNFiTc" target="_blank" rel="noopener noreferrer">HowRAGGraphRAGandContextEngineeringImproveAIPerformance</a></span>
+            </article>
+            <article class="card" data-stage="runtime" id="agentic-rag">
+              <div class="card-head"><h3>Agentic RAG</h3><span class="stage runtime">Runtime</span></div>
+              <p>Retrieval becomes a tool inside a reasoning loop. The agent can choose semantic search, inspect a whole document, switch knowledge bases, call an external service, retry, use an off-topic fallback, or decide it has enough. It can also select an output format such as text, chart, or code.</p>
+              <div class="procon"><div><b>Best when</b>Questions need adaptive, multi-step evidence gathering.</div><div><b>Trade-off</b>Maximum flexibility, lower predictability; routing instructions must be clear.</div></div>
+              <div class="distinction-group"><h4 class="distinction-title">Important distinctions</h4><div class="open-note">Agentic RAG describes control flow; GraphRAG describes relationship-oriented representation and retrieval. Neither excludes the other.</div></div>
+              <span class="source">Sources: <a href="https://youtube.com/watch?v=tLMViADvSNE" target="_blank" rel="noopener noreferrer">EveryRAGStrategyExplainedin13MinutesNoFluff</a>; <a href="https://www.youtube.com/watch?v=0z9_MhcYvcY" target="_blank" rel="noopener noreferrer">WhatisAgenticRAG</a>; <a href="https://www.youtube.com/watch?v=JB2P5Gk23VI" target="_blank" rel="noopener noreferrer">RAGsEvolutionFromSimpleRetrievaltoAgenticAI</a></span>
+            </article>
+            <article class="card" data-stage="runtime" id="context-engineering">
+              <div class="card-head"><h3>Context engineering</h3><span class="stage runtime">Runtime</span></div>
+              <p>The talks use “context engineering” in three related ways: as the broad discipline of giving a model the right information, as a data architecture spanning access and governance, and as online prompt assembly or compression. Four pillars recur:</p>
+              <ul><li><b>Connected access:</b> query data where it lives.</li><li><b>Knowledge layer:</b> resolve entities, relationships, hierarchies, and decision traces.</li><li><b>Precision retrieval:</b> filter by intent, role, time, and policy.</li><li><b>Runtime governance:</b> enforce access during retrieval and response.</li></ul>
+              <p>This page uses <b>context assembly</b> for the narrower online step of selecting, ranking, merging, and compressing evidence for the generator.</p>
+              <span class="source">Sources: <a href="https://www.youtube.com/watch?v=pN-LfxNFiTc" target="_blank" rel="noopener noreferrer">HowRAGGraphRAGandContextEngineeringImproveAIPerformance</a>; <a href="https://www.youtube.com/watch?v=fB2JQXEH_94" target="_blank" rel="noopener noreferrer">RAGvsAgenticAIHow LLMsConnectDataforSmarterAI</a></span>
+            </article>
+            <article class="card" data-stage="choice" id="openrag-platform">
+              <div class="card-head"><h3>OpenRAG is a platform, not a strategy</h3><span class="stage choice">Architecture</span></div>
+              <p>OpenRAG integrates Docling for ingestion, OpenSearch for vector storage and hybrid search, and Langflow for agentic orchestration. It arrives preconfigured for document ingestion, chat, filtering, editable flows, and provider swaps. Unique, descriptive tool names and descriptions help the agent choose the right tool.</p>
+              <div class="open-note"><b>Placement rule:</b> this is an implementation platform covered in one talk,not a retrieval technique.</div>
+              <span class="source">Source: <a href="https://www.youtube.com/watch?v=qreMmsOY86A" target="_blank" rel="noopener noreferrer">WhatisOpenRAGUnlockingtheFutureofRAGinGenerativeAI</a></span>
+            </article>
+          </div>
+        </section>
+
+        <section class="branch" id="choose">
+          <header class="branch-head"><span class="branch-num">05</span><div><h2>Choose the architecture</h2><p class="branch-intro">RAG is one way to put knowledge into a model’s working context. Choose it by data shape, freshness, scale, latency, and whether the system must know, act, remember, or follow a procedure.</p></div></header>
+          <div class="grid">
+            <article class="card wide decision" id="architecture-patterns" data-stage="choice">
+              <table>
+                <thead><tr><th>Pattern</th><th>Choose when</th><th>Watch for</th></tr></thead>
+                <tbody>
+                  <tr><td>RAG</td><td>Knowledge is large, dynamic, proprietary, or needs citations.</td><td>Retrieval can silently miss what exists.</td></tr>
+                  <tr><td>Long context</td><td>A bounded corpus needs global reasoning, such as one contract or book.</td><td>Re-reading cost and attention dilution on very long inputs.</td></tr>
+                  <tr><td>CAG</td><td>A fixed corpus fits the window, latency matters, and the cache changes rarely.</td><td>The talk cites typical 32–100K-token windows, a possibly dated range; every knowledge change requires cache recomputation.</td></tr>
+                  <tr><td>Fine-tuning / LoRA</td><td>A specific behavior bottleneck remains after prompting, RAG, and skills; or latency demands a smaller model.</td><td>Weights are not a convenient store for fresh facts.</td></tr>
+                  <tr><td>MCP</td><td>The model must discover and call live tools or systems.</td><td>It complements RAG; it does not replace grounded document knowledge.</td></tr>
+                  <tr><td>Agent skill</td><td>The system needs a repeatable procedure plus judgment, loaded on demand.</td><td>Procedural knowledge is different from facts.</td></tr>
+                  <tr><td>Memory</td><td>The agent should reuse experience it recorded from prior work.</td><td>Provenance differs: memory is agent-written; RAG is human-curated.</td></tr>
+                  <tr><td>ADK</td><td>The AI must execute multi-step workflows and use tools consistently.</td><td>Most production systems pair action (ADK) with knowledge (RAG).</td></tr>
+                </tbody>
+              </table>
+              <span class="source">Sources: <a href="http://youtube.com/watch?v=UabBYexBD4k" target="_blank" rel="noopener noreferrer">IsRAGStillNeededChoosingtheBestApproachforLLMs</a>; <a href="http://youtube.com/watch?v=HdafI0t3sEY" target="_blank" rel="noopener noreferrer">RAGvsCAGSolvingKnowledgeGapsinAIModels</a>; <a href="https://www.youtube.com/watch?v=-W2JdSl1v48&pp=0gcJCf4LAYcqIYzv" target="_blank" rel="noopener noreferrer">IsFineTuningStillNeededLLMsRAGLoRA</a>; <a href="https://www.youtube.com/watch?v=X95MFcYH1_s" target="_blank" rel="noopener noreferrer">MCPvsRAGHowAIAgentsLLMsConnecttoData</a>; <a href="https://www.youtube.com/watch?v=X4FVEEegCbk" target="_blank" rel="noopener noreferrer">SkillsvsMCPvsRAGvsMemoryWhatAIAgentsNeedtoKnow</a>; <a href="https://www.youtube.com/watch?v=7HSSR1n8dgc&list=PLOspHqNVtKADfxkuDuHduUkDExBpEt3DF" target="_blank" rel="noopener noreferrer">ADKvsRAGHowtoChoosetheRightAIStack</a></span>
+            </article>
+            <article class="card" data-stage="choice" id="rag-long-context">
+              <div class="card-head"><h3>RAG vs long context</h3><span class="stage choice">Architecture</span></div>
+              <p><b>Long context wins</b> by collapsing the stack, removing the retrieval lottery, and supporting whole-book comparisons, including finding what is missing.</p>
+              <p><b>RAG wins</b> by avoiding the re-reading tax. The talk equates a 500-page manual to about 250K tokens and uses a 500K-token haystack example; these talk-stated context-window figures may date quickly. Prompt caching only partly offsets the cost of repeatedly reading long inputs.</p>
+              <span class="source">Sources: <a href="http://youtube.com/watch?v=UabBYexBD4k" target="_blank" rel="noopener noreferrer">IsRAGStillNeededChoosingtheBestApproachforLLMs</a>; <a href="https://www.youtube.com/watch?v=fB2JQXEH_94" target="_blank" rel="noopener noreferrer">RAGvsAgenticAIHow LLMsConnectDataforSmarterAI</a></span>
+            </article>
+            <article class="card" data-stage="choice" id="rag-cag">
+              <div class="card-head"><h3>RAG vs CAG</h3><span class="stage choice">Architecture</span></div>
+              <p>CAG loads the entire knowledge base once and reuses the transformer’s key-value cache. It offers one-forward-pass latency, but the model must extract the right answer from everything present.</p>
+              <p><b>Hybrid:</b> let RAG retrieve a relevant subset, then cache it as working memory for follow-up questions.</p>
+              <span class="source">Source: <a href="http://youtube.com/watch?v=HdafI0t3sEY" target="_blank" rel="noopener noreferrer">RAGvsCAGSolvingKnowledgeGapsinAIModels</a></span>
+            </article>
+            <article class="card" data-stage="choice" id="rag-before-fine-tuning">
+              <div class="card-head"><h3>RAG before fine-tuning</h3><span class="stage choice">Architecture</span></div>
+              <p>The source’s no-weights stack is: base model → prompt/context engineering → RAG for fresh or proprietary knowledge → skills for procedure → fine-tuning for a remaining bottleneck, usually with LoRA.</p>
+              <p>The case for default fine-tuning weakened as context windows passed 1M tokens, reasoning models improved, and frontier models caught up. One 2023 legal fine-tune preferred 97% over GPT-4 was surpassed by seven general models on the company’s 2025 benchmark.</p>
+              <div class="open-note"><b>Fine-tuning still fits:</b> latency-critical voice systems, distillation, and reinforcement fine-tuning when outputs can be graded programmatically.</div>
+              <span class="source">Source: <a href="https://www.youtube.com/watch?v=-W2JdSl1v48&pp=0gcJCf4LAYcqIYzv" target="_blank" rel="noopener noreferrer">IsFineTuningStillNeededLLMsRAGLoRA</a></span>
+            </article>
+            <article class="card" data-stage="runtime" id="rag-mcp">
+              <div class="card-head"><h3>RAG + MCP</h3><span class="stage runtime">Runtime</span></div>
+              <p>A useful but simplified split is that RAG often supplies knowledge while MCP exposes capabilities. In practice the boundary overlaps: an MCP server can expose search to agents, and an agent can use RAG as a tool. MCP follows discover → understand → plan → execute → integrate; a well-designed agent decides when to retrieve documents and when to call other tools.</p>
+              <span class="source">Source: <a href="https://www.youtube.com/watch?v=X95MFcYH1_s" target="_blank" rel="noopener noreferrer">MCPvsRAGHowAIAgentsLLMsConnecttoData</a></span>
+            </article>
+          </div>
+        </section>
+
+        <section class="branch" id="measure">
+          <header class="branch-head"><span class="branch-num">06</span><div><h2>Measure & operate</h2><p class="branch-intro">A RAG system is only trustworthy when its answer, evidence, safety, and behavior can be measured,and when the deployment path keeps those checks visible.</p></div></header>
+          <div class="grid">
+            <article class="card wide" data-stage="runtime" id="evaluation-measurements">
+              <div class="card-head"><h3>Seven model-risk measurements</h3><span class="stage runtime">Runtime</span></div>
+              <div class="metric-grid">
+                <div class="metric"><b>ROUGE</b><span>Recall and completeness via word-sequence overlap with an expected answer; 0–1.</span></div>
+                <div class="metric"><b>BLEU</b><span>Precision of generated words against expected text; penalizes longer responses.</span></div>
+                <div class="metric"><b>METEOR</b><span>An average of precision and recall for a rounded overall score.</span></div>
+                <div class="metric"><b>PII</b><span>Whether names, email addresses, phone numbers, or other identifiers leak in or out.</span></div>
+                <div class="metric"><b>HAP</b><span>Hate, abuse, and profanity monitoring.</span></div>
+                <div class="metric"><b>Context relevance</b><span>Whether an answer,correct or not,actually addresses the question asked.</span></div>
+                <div class="metric"><b>Hallucination</b><span>Incorrect answers presented as correct.</span></div>
+              </div>
+              <div class="open-note"><b>Coverage gap:</b> the transcripts do not discuss retrieval metrics such as recall@k, MRR, or nDCG, nor RAGAS-style faithfulness or answer-relevance frameworks.</div>
+              <div class="open-note safeguards"><b>Interpretive safeguards</b><ul><li>Keep retrieved-context relevance separate from answer relevance; the source material mixes the two, so do not treat its labels as a precise metric specification.</li><li>ROUGE, BLEU, and METEOR are reference-answer comparison metrics, not proof that an answer is grounded, safe, or correct.</li><li>Separate three failure types when classifying failures: a missing retrieval result, an unsupported answer, and contradictory source material.</li><li>Treat document version and applicability as metadata and governance concerns.</li></ul></div>
+              <span class="source">Sources: <a href="https://www.youtube.com/embed/DRZMjP5Pg5A?si=OvDbRDSasXnq7sCM" target="_blank" rel="noopener noreferrer">7measurementsthathelpminimizemodelriskforRAG</a>; <a href="https://www.youtube.com/embed/LpKGm1jJXv4" target="_blank" rel="noopener noreferrer">SettingupRetrievalAugmentedGenerationRAGin3Steps</a></span>
+            </article>
+            <article class="card" data-stage="choice" id="deployment-paths">
+              <div class="card-head"><h3>Deployment paths</h3><span class="stage choice">Architecture</span></div>
+              <ol><li><b>Install:</b> install the CLI; verify with <code>wxflows --version</code>.</li><li><b>Authenticate:</b> <code>wxflows login</code>, then <code>wxflows whoami</code>.</li><li><b>Ingest + deploy:</b> use <code>wxflows init --interactive</code>, deploy the collection, compose the RAG flow, then <code>wxflows deploy</code>.</li></ol>
+              <p>At query time, the walkthrough exposes completion, groundedness warnings, hallucination metrics, and source documents.</p>
+              <p>For local or on-premises deployment, the collection also names vLLM and llama.cpp, on-premises data sovereignty, and KV-cache tuning as practical considerations.</p>
+              <span class="source">Sources: <a href="https://www.youtube.com/embed/LpKGm1jJXv4" target="_blank" rel="noopener noreferrer">SettingupRetrievalAugmentedGenerationRAGin3Steps</a>; <a href="https://www.youtube.com/watch?v=fB2JQXEH_94" target="_blank" rel="noopener noreferrer">RAGvsAgenticAIHow LLMsConnectDataforSmarterAI</a></span>
+            </article>
+          </div>
+        </section>
+
+        <div class="empty" id="empty">No topics match that search and lifecycle filter.</div>
+      </div>
+    </section>
+
+
+    <section class="outside-section" aria-labelledby="outside-title">
+      <h2 id="outside-title">Outside this collection</h2>
+      <p>These important topics are not attributed to the transcript collection and need separate study:</p>
+      <ul class="outside-list">
+        <li>Retrieved-document prompt injection and poisoning</li>
+        <li>Multi-turn query rewriting</li>
+        <li>HyDE</li>
+        <li>SPLADE</li>
+        <li>ColBERT and late-interaction retrieval</li>
+        <li>Structured-data retrieval and text-to-SQL</li>
+        <li>Multilingual retrieval</li>
+      </ul>
+    </section>
+
+    <section class="reading-section" id="reading-paths" aria-labelledby="reading-title">
+      <div class="section-label">Guided reading</div>
+      <h2 id="reading-title">Guided reading paths</h2>
+      <p class="reading-intro">Editorial routes through the material, not prescriptions for production architecture.</p>
+      <div class="path-grid">
+        <article class="path-card">
+          <h3>Learn the basic pipeline and search options</h3>
+          <ol class="path-flow"><li><a href="#rag-contract">What is RAG?</a></li><li><a href="#evolution-of-rag">RAG’s evolution</a></li><li><a href="#hybrid-retrieval">Sparse, dense, and hybrid retrieval</a></li><li><a href="#practical-starter-stack">The strategy survey</a></li></ol>
+        </article>
+        <article class="path-card">
+          <h3>Understand document preparation and structure</h3>
+          <ol class="path-flow"><li><a href="#document-intelligence-with-docling">Docling</a></li><li><a href="#integration-governance">Unstructured data and governance</a></li><li><a href="#chunkless-rag">Chunkless RAG</a></li><li><a href="#complex-document-rag-failure">Complex-document failure modes</a></li></ol>
+        </article>
+        <article class="path-card">
+          <h3>Explore multimodal and relationship-aware context</h3>
+          <ol class="path-flow"><li><a href="#multimodal-rag">Multimodal RAG</a></li><li><a href="#graphrag">GraphRAG and context engineering</a></li><li><a href="#practical-starter-stack">The strategy survey</a></li></ol>
+        </article>
+        <article class="path-card">
+          <h3>Connect retrieval to an agent workflow</h3>
+          <ol class="path-flow"><li><a href="#agentic-rag">Agentic RAG</a></li><li><a href="#rag-mcp">MCP</a></li><li><a href="#architecture-patterns">Skills and memory</a></li><li><a href="#architecture-patterns">ADK</a></li><li><a href="#agentic-rag">RAG vs agentic AI</a></li></ol>
+        </article>
+        <article class="path-card">
+          <h3>Compare retrieval, long context, caching, and training</h3>
+          <ol class="path-flow"><li><a href="#rag-long-context">RAG vs long context</a></li><li><a href="#rag-cag">RAG vs CAG</a></li><li><a href="#rag-before-fine-tuning">RAG vs fine-tuning and LoRA</a></li></ol>
+        </article>
+        <article class="path-card">
+          <h3>Study packaged implementation and reliability</h3>
+          <ol class="path-flow"><li><a href="#deployment-paths">Setup walkthrough</a></li><li><a href="#openrag-platform">OpenRAG</a></li><li><a href="#evaluation-measurements">Evaluation metrics</a></li><li><a href="#complex-document-rag-failure">Complex-document failure modes</a></li></ol>
+        </article>
+      </div>
+    </section>
+
+    <footer>
+      <p>This page synthesizes the supplied transcript corpus. Source labels preserve each transcript’s filename; figures and recommendations are attributed to the talks rather than presented as independent benchmarks. Open questions and thinly covered areas are marked in context.</p>
+      <a href="https://www.youtube.com/playlist?list=PLBa9Lq6VGMSE" target="_blank" rel="noopener noreferrer">Source playlist ↗</a>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      var input = document.getElementById('search');
+      var buttons = Array.prototype.slice.call(document.querySelectorAll('.filter'));
+      var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
+      var branches = Array.prototype.slice.call(document.querySelectorAll('.branch'));
+      var branchLinks = Array.prototype.slice.call(document.querySelectorAll('.rail a[href^="#"]'));
+      var results = document.getElementById('results');
+      var empty = document.getElementById('empty');
+      var active = 'all';
+
+      function applyFilters() {
+        var term = input.value.trim().toLowerCase();
+        var visible = 0;
+        cards.forEach(function (card) {
+          var haystack = card.textContent.toLowerCase();
+          var stages = (card.getAttribute('data-stage') || '').split(/\s+/);
+          var stageMatch = active === 'all' || stages.indexOf(active) !== -1;
+          var searchMatch = !term || haystack.indexOf(term) !== -1;
+          var show = stageMatch && searchMatch;
+          card.classList.toggle('hidden', !show);
+          if (show) visible += 1;
+        });
+        branches.forEach(function (branch) {
+          var branchCards = Array.prototype.slice.call(branch.querySelectorAll('.card'));
+          branch.style.display = branchCards.some(function (c) { return !c.classList.contains('hidden'); }) ? '' : 'none';
+        });
+        results.textContent = visible + (visible === 1 ? ' topic' : ' topics');
+        empty.classList.toggle('show', visible === 0);
+      }
+
+      buttons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          active = button.getAttribute('data-filter');
+          buttons.forEach(function (b) { b.setAttribute('aria-pressed', b === button ? 'true' : 'false'); });
+          applyFilters();
+        });
+      });
+
+      function activateBranch(link) {
+        var target = document.querySelector(link.getAttribute('href'));
+        if (!target) return;
+
+        if (target.style.display === 'none') {
+          input.value = '';
+          active = 'all';
+          buttons.forEach(function (button) {
+            button.setAttribute('aria-pressed', button.getAttribute('data-filter') === 'all' ? 'true' : 'false');
+          });
+          applyFilters();
+        }
+
+        branchLinks.forEach(function (branchLink) {
+          if (branchLink === link) branchLink.setAttribute('aria-current', 'location');
+          else branchLink.removeAttribute('aria-current');
+        });
+        target.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
+
+      branchLinks.forEach(function (link) {
+        link.addEventListener('click', function (event) {
+          event.preventDefault();
+          activateBranch(link);
+        });
+        link.addEventListener('keydown', function (event) {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          activateBranch(link);
+        });
+      });
+
+      input.addEventListener('input', applyFilters);
+      applyFilters();
+    }());
+  </script>
+</body>
+</html>
