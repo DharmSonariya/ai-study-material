@@ -11,13 +11,13 @@
   :root {
     color-scheme: light dark;
     --bg: #f4f6f3; --surface: #ffffff; --ink: #15231f; --muted: #53645e;
-    --line: #c8d2cc; --accent: #0d7257; --accent2: #d96f32;
+    --line: #c8d2cc; --accent: #0d7257; --accent2: #d96f32; --accent3: #2f6fbf;
     --shadow: 0 18px 40px rgba(0,0,0,.10);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #0c1311; --surface: #131d1a; --ink: #ecf4ef; --muted: #a6b7b0;
-      --line: #30423b; --accent: #62d5ae; --accent2: #f59b61;
+      --line: #30423b; --accent: #62d5ae; --accent2: #f59b61; --accent3: #7fb0ec;
       --shadow: 0 18px 44px rgba(0,0,0,.30);
     }
   }
@@ -33,6 +33,7 @@
   .card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
   .card.rag { border-top: 6px solid var(--accent); }
   .card.kb { border-top: 6px solid var(--accent2); }
+  .card.pipe { border-top: 6px solid var(--accent3); }
   .card .n { font-size: .7rem; font-weight: 700; letter-spacing: .14em; color: var(--muted); }
   .card h2 { margin: .55em 0 .45em; font-size: 1.5rem; letter-spacing: -.02em; }
   .card p { margin: 0; color: var(--muted); font-size: .94rem; }
@@ -47,7 +48,7 @@
 <main class="page">
   <p class="kicker">Study notes</p>
   <h1>AI <span>study material.</span></h1>
-  <p class="lede">Visual taxonomies for retrieval architecture: advanced RAG strategies and Amazon Bedrock Knowledge Bases. Interactive reference pages, hosted here with GitHub Pages.</p>
+  <p class="lede">Visual taxonomies for retrieval architecture: RAG fundamentals, advanced RAG strategies, and Amazon Bedrock Knowledge Bases. Interactive reference pages, hosted here with GitHub Pages.</p>
   <div class="grid">
     <a class="card rag" href="./advanced-rag/">
       <span class="n">01 / RAG</span>
@@ -59,6 +60,12 @@
       <span class="n">02 / BEDROCK</span>
       <h2>Knowledge Bases Taxonomy</h2>
       <p>Amazon Bedrock Knowledge Bases as a family of retrieval architectures: operating models, architecture shapes, sources, preparation, encoding, stores, retrieval, and fast paths by intent.</p>
+      <span class="go">Open &rarr;</span>
+    </a>
+    <a class="card pipe" href="./rag-taxonomy/">
+      <span class="n">03 / PIPELINE</span>
+      <h2>RAG Taxonomy</h2>
+      <p>33 topics across six branches: foundation, preparing knowledge, retrieving evidence, expanding the substrate, choosing the architecture, measuring and operating. Includes a seven-question design lens, guided reading paths, and evaluation safeguards.</p>
       <span class="go">Open &rarr;</span>
     </a>
   </div>
